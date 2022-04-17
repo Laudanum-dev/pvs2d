@@ -147,8 +147,6 @@ int _buildBSP(PVS2D_BSPTreeNode* cur_node, PVS2D_SegStack* cur_segs) {
     // use the min segment and split all segments into right ones, left ones and etc.
     PVS2D_SegStack* segsLeft = 0;
     PVS2D_SegStack* segsRight = 0;
-    int nx = rootSeg->line->ay - rootSeg->line->by;
-    int ny = rootSeg->line->bx - rootSeg->line->ax;
     cur_node->line = rootSeg->line;
     PVS2D_SegStack *curHead, *nextHead = cur_segs;
     while (1) {
