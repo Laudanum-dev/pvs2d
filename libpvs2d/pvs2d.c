@@ -59,7 +59,7 @@ building PVS:
 #endif
 #endif
 
-#define MATCH_TOLERANCE (0.0005f)
+#define MATCH_TOLERANCE (0.0625f)
 // the so called EPS. used to fix some errors that inevitably happen with float arithmetics
 
 static inline char _collinear(int ax, int ay, int bx, int by, int cx, int cy) {
