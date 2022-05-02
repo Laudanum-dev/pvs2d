@@ -72,6 +72,12 @@ static inline void _intersect(int ax, int ay, int bx, int by, int cx, int cy, in
 	*denomDest = nx * (cy - dy) - ny * (cx - dx);
 };
 
+// returns 0 if vector (ax, ay) is on the right side of (bx, by)
+// returns anything else if not
+static inline unsigned int _side(float ax, float ay, float bx, float by) {
+	return (ax * by > ay * bx);
+}
+
 int _buildBSP(PVS2D_BSPTreeNode* cur_node, PVS2D_SegStack* cur_segs) {
 	DBG_ASSERT(cur_node, "cur_node can't be NULL (node must be allocated before calling the function)")
 	DBG_ASSERT(cur_segs, "cur_segs can't be NULL (segment array can't have 0 segments)");
@@ -328,3 +334,19 @@ int PVS2D_BuildBSPTree(int* segs, unsigned int segsC, PVS2D_BSPTreeNode* rootDes
 	return _buildBSP(rootDest, prSegs);
 
 };
+
+unsigned int PVS2D_FindLeafOfPoint(PVS2D_BSPTreeNode* root, float x, float y) {
+	if (_side(
+		root->line->bx - root->line->ax,
+		root->line->by - root->line->ay,
+		x - root->line->ax,
+		y - root->line->ay)
+	) {
+		// its on the left
+		return (root->left) ? PVS2D_FindLeafOfPoint(root->left, x, y) : root->leftLeaf;
+	}
+	else {
+		// its on the right
+		return (root->right) ? PVS2D_FindLeafOfPoint(root->right, x, y) : root->rightLeaf;
+	}
+}
