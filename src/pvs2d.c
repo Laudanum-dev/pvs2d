@@ -72,31 +72,6 @@ static inline void _intersect(int ax, int ay, int bx, int by, int cx, int cy, in
     *denomDest = (cx - dx) * ny - (cy - dy) * nx;
 };
 
-typedef struct PVS2D_Line {
-    int ax, ay, bx, by;
-    PVS2D_SegStack* mems;
-} PVS2D_Line;
-
-typedef struct PVS2D_Seg {
-    PVS2D_Line* line;
-    float tStart, tEnd;
-    int opq;
-} PVS2D_Seg;
-
-typedef struct PVS2D_SegStack {
-    PVS2D_Seg* seg;
-    PVS2D_SegStack* next;
-} PVS2D_SegStack;
-
-typedef struct PVS2D_BSPTreeNode {
-    PVS2D_BSPTreeNode* left;
-    PVS2D_BSPTreeNode* right;
-    unsigned int leftLeaf;
-    unsigned int rightLeaf;
-    PVS2D_Line* line;
-    PVS2D_SegStack* segs;
-} PVS2D_BSPTreeNode;
-
 int _buildBSP(PVS2D_BSPTreeNode* cur_node, PVS2D_SegStack* cur_segs) {
     cur_node->left = 0;
     cur_node->right = 0;
@@ -285,7 +260,7 @@ int PVS2D_BuildBSP(int* segs, unsigned int segsC, PVS2D_BSPTreeNode* rootDest) {
             if (_collinear(ax, ay, bx, by, top->line->ax, top->line->ay) &&
                 _collinear(ax, ay, bx, by, top->line->bx, top->line->by)
             ) {
-                match = top->line;
+                match = top;
                 break;
             }
         }

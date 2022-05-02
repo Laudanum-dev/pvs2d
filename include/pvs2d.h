@@ -8,27 +8,27 @@
 
 typedef struct PVS2D_Line {
     int ax, ay, bx, by;
-    PVS2D_SegStack* mems;
+    struct PVS2D_SegStack* mems;
 } PVS2D_Line;
 
 typedef struct PVS2D_Seg {
-    PVS2D_Line* line;
+    struct PVS2D_Line* line;
     float tStart, tEnd;
     int opq;
 } PVS2D_Seg;
 
 typedef struct PVS2D_SegStack {
-    PVS2D_Seg* seg;
-    PVS2D_SegStack* next;
+    struct PVS2D_Seg* seg;
+    struct PVS2D_SegStack* next;
 } PVS2D_SegStack;
 
 typedef struct PVS2D_BSPTreeNode {
-    PVS2D_BSPTreeNode* left;
-    PVS2D_BSPTreeNode* right;
+    struct PVS2D_BSPTreeNode* left;
+    struct PVS2D_BSPTreeNode* right;
     unsigned int leftLeaf;
     unsigned int rightLeaf;
-    PVS2D_Line* line;
-    PVS2D_SegStack* segs;
+    struct PVS2D_Line* line;
+    struct PVS2D_SegStack* segs;
 } PVS2D_BSPTreeNode;
 
 // --------------------------------------------------------
