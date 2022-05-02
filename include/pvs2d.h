@@ -41,7 +41,7 @@ int PVS2D_BuildBSPTree(
 );
 
 unsigned int PVS2D_FindLeafOfPoint(
-    PVS2D_BSPTreeNode* root, 
+    PVS2D_BSPTreeNode* root,
     float x, float y
 );
 
