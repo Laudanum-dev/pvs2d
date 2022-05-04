@@ -29,9 +29,16 @@ typedef struct PVS2D_BSPTreeNode {
     unsigned int rightLeaf;
     struct PVS2D_Line* line;
     struct PVS2D_SegStack* segs;
+    
     float tSplitStart;
     float tSplitEnd;
+    struct PVS2D_PortalStack* portals;
 } PVS2D_BSPTreeNode;
+
+typedef struct PVS2D_PortalStack {
+    struct PVS2D_Portal* portal;
+    struct PVS2D_PortalStack* next;
+} PVS2D_PortalStack;
 
 typedef struct PVS2D_Portal {
     PVS2D_Seg seg;

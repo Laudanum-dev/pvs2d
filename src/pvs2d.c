@@ -95,7 +95,7 @@ int _cropSplitSegs(PVS2D_BSPTreeNode* node, PVS2D_Line* line, int left) {
 	float t = (float)numer / denom;
 	if (left) {
 		// crop the splitseg so it is to the left
-		if (denom < 0) {
+		if (denom > 0) {
 			node->tSplitEnd = min(t, node->tSplitEnd);
 		}
 		else {
@@ -104,7 +104,7 @@ int _cropSplitSegs(PVS2D_BSPTreeNode* node, PVS2D_Line* line, int left) {
 	}
 	else {
 		// crop the splitseg so it is to the right
-		if (denom < 0) {
+		if (denom > 0) {
 			node->tSplitStart = max(t, node->tSplitStart);
 		}
 		else {
@@ -217,6 +217,7 @@ int _buildBSP(PVS2D_BSPTreeNode* cur_node, PVS2D_SegStack* cur_segs) {
 	cur_node->segs = 0;
 	cur_node->tSplitStart = -INFINITY;
 	cur_node->tSplitEnd = INFINITY;
+	cur_node->portals = 0;
 
 
 	PVS2D_Seg* rootSeg = 0;
