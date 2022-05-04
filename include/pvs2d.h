@@ -29,7 +29,15 @@ typedef struct PVS2D_BSPTreeNode {
     unsigned int rightLeaf;
     struct PVS2D_Line* line;
     struct PVS2D_SegStack* segs;
+    float tSplitStart;
+    float tSplitEnd;
 } PVS2D_BSPTreeNode;
+
+typedef struct PVS2D_Portal {
+    PVS2D_Seg seg;
+    unsigned int leftLeaf;
+    unsigned int rightLeaf;
+} PVS2D_Portal;
 
 // --------------------------------------------------------
 //                  INTERFACE FUNCTIONS
@@ -44,6 +52,5 @@ unsigned int PVS2D_FindLeafOfPoint(
     PVS2D_BSPTreeNode* root,
     float x, float y
 );
-
 
 #endif

@@ -78,6 +78,134 @@ static inline unsigned int _side(float ax, float ay, float bx, float by) {
 	return (ax * by > ay * bx);
 }
 
+int _cropSplitSegs(PVS2D_BSPTreeNode* node, PVS2D_Line* line, int left) {
+	if (node->line == line) {
+		DBG_ASSERT(0, "This should not have happened...");
+	}
+	int numer, denom;
+	_intersect(
+		line->ax, line->ay, line->bx, line->by,
+		node->line->ax, node->line->ay, node->line->bx, node->line->by,
+		&numer, &denom
+	);
+	if (denom == 0) {
+		// parallel. do nothing
+		return 0;
+	}
+	float t = (float)numer / denom;
+	if (left) {
+		// crop the splitseg so it is to the left
+		if (denom < 0) {
+			node->tSplitEnd = min(t, node->tSplitEnd);
+		}
+		else {
+			node->tSplitStart = max(t, node->tSplitStart);
+		}
+	}
+	else {
+		// crop the splitseg so it is to the right
+		if (denom < 0) {
+			node->tSplitStart = max(t, node->tSplitStart);
+		}
+		else {
+			node->tSplitEnd = min(t, node->tSplitEnd);
+		}
+	}
+	if (node->left) {
+		_cropSplitSegs(node->left, line, left);
+	}
+	if (node->right) {
+		_cropSplitSegs(node->right, line, left);
+	}
+}
+
+enum _side {
+	SIDE_COL,			// collinear
+	SIDE_L_PARAL,		// parallel, is on the left
+	SIDE_R_PARAL,		// parallel, is on the right
+	SIDE_S_FL,			// faces left, splitted
+	SIDE_S_FR,			// faces right, splitted
+	SIDE_L_FL,			// faces left, is on the left
+	SIDE_L_FR,			// faces right, is on the left
+	SIDE_R_FL,			// faces left, is on the right
+	SIDE_R_FR			// faces right, is on the right
+};
+
+// tells which side of line the segment is on, as well as what orientation it has.
+// the orientation is being treated as if we would stand in line's point A looked 
+// on the point B also, if the those bits aren't 00, then the function can output the 
+// parameter of point on the segment's line of where the collision happens.
+char _split(PVS2D_Line* line, PVS2D_Seg* seg, float* tDest) {
+	if (seg->line == line) {
+		// collinear.
+		return SIDE_COL;
+	}
+	int numer, denom;
+	_intersect(
+		line->ax, line->ay, line->bx, line->by,
+		seg->line->ax, seg->line->ay, seg->line->bx, seg->line->by,
+		&numer, &denom
+	);
+	if (denom == 0) {
+		// parallel.
+		if (numer == 0) {
+			// they are still collinear
+			// this should probably be a warning
+			return SIDE_COL;
+		}
+		else if (numer > 0) {
+			// to the left
+			return SIDE_L_PARAL;
+		}
+		else {
+			// to the right
+			return SIDE_R_PARAL;
+		}
+	}
+	else {
+		// not parallel. calculate the split point
+		float t = (float)numer / denom;
+		if (tDest) *tDest = t;
+		
+		if (t > seg->tStart + MATCH_TOLERANCE && t < seg->tEnd - MATCH_TOLERANCE) {
+			// splits the segment
+			if (denom < 0) {
+				// faces left
+				return SIDE_S_FL;
+			}
+			else {
+				// faces right
+				return SIDE_S_FR;
+			}
+		}
+		else {
+			// doesn't split the segment.
+			// in order to get more accurate result, we will use middle point of the segment
+			// to determine the side it is on
+			float middle = (seg->tStart + seg->tEnd) / 2;
+			// we need to take in account the orientation of the segment in order for our magic to work
+			// the rest here are mostly self-explainatory
+			if (denom < 0) {
+				if (middle > t) {
+					return SIDE_L_FL;
+				}
+				else {
+					return SIDE_R_FL;
+				}
+			}
+			else {
+				if (middle > t) {
+					return SIDE_R_FR;
+				}
+				else {
+					return SIDE_L_FR;
+				}
+			}
+		}
+	}
+
+};
+
 int _buildBSP(PVS2D_BSPTreeNode* cur_node, PVS2D_SegStack* cur_segs) {
 	DBG_ASSERT(cur_node, "cur_node can't be NULL (node must be allocated before calling the function)")
 	DBG_ASSERT(cur_segs, "cur_segs can't be NULL (segment array can't have 0 segments)");
@@ -87,6 +215,8 @@ int _buildBSP(PVS2D_BSPTreeNode* cur_node, PVS2D_SegStack* cur_segs) {
 	cur_node->rightLeaf = 0;
 	cur_node->line = 0;
 	cur_node->segs = 0;
+	cur_node->tSplitStart = -INFINITY;
+	cur_node->tSplitEnd = INFINITY;
 
 
 	PVS2D_Seg* rootSeg = 0;
@@ -101,25 +231,11 @@ int _buildBSP(PVS2D_BSPTreeNode* cur_node, PVS2D_SegStack* cur_segs) {
 	for (PVS2D_SegStack* rootHead = cur_segs; rootHead != 0; rootHead = rootHead->next) {
 		// choose any segment and see how much it splits
 		unsigned int splitC = 0;
-		int numer, denom;
 		for (PVS2D_SegStack* curHead = cur_segs; curHead != 0; curHead = curHead->next) {
-			_intersect(
-				rootHead->seg->line->ax, rootHead->seg->line->ay,
-				rootHead->seg->line->bx, rootHead->seg->line->by,
-				curHead->seg->line->ax, curHead->seg->line->ay,
-				curHead->seg->line->bx, curHead->seg->line->by, &numer, &denom
-			);
-			if (denom == 0) {
-				// parallel. do nothing
-			}
-			else {
-				float t = (float)numer / denom;
-				if (t > curHead->seg->tStart + MATCH_TOLERANCE && t < curHead->seg->tEnd - MATCH_TOLERANCE) {
-					splitC++;
-				}
-				else {
-					// intersect outside of segments. do nothing
-				}
+			char side = _split(rootHead->seg->line, curHead->seg, 0);
+			if (side == SIDE_S_FL || side == SIDE_S_FR) {
+				// it splits it
+				splitC++;
 			}
 		}
 		if (splitC < minsplits) {
@@ -141,84 +257,51 @@ int _buildBSP(PVS2D_BSPTreeNode* cur_node, PVS2D_SegStack* cur_segs) {
 		nextHead = curHead->next;
 		// this juncture above was used instead of for loop to allow us modifying curHead->next ptr 
 
-		if (curHead->seg->line == rootSeg->line) {
-			// they are collinear
+		float t;
+		char side = _split(rootSeg->line, curHead->seg, &t);
+
+		switch (side) {
+		case SIDE_COL:;
 			curHead->next = cur_node->segs;
 			cur_node->segs = curHead;
-			continue;
+			break;
+		case SIDE_L_PARAL:;
+		case SIDE_L_FL:;
+		case SIDE_L_FR:;
+			curHead->next = segsLeft;
+			segsLeft = curHead;
+			break;
+		case SIDE_R_PARAL:;
+		case SIDE_R_FL:;
+		case SIDE_R_FR:;
+			curHead->next = segsRight;
+			segsRight = curHead;
+			break;
+		case SIDE_S_FL:;
+		case SIDE_S_FR:;
+			PVS2D_SegStack* newElem = (PVS2D_SegStack*)malloc(sizeof(PVS2D_SegStack));
+			DBG_ASSERT(newElem, "Failed to allocate new seg stack node");
+			*newElem = *curHead;
+			newElem->seg = (PVS2D_Seg*)malloc(sizeof(PVS2D_Seg));
+			DBG_ASSERT(newElem->seg, "Failed to allocate new segment");
+			*newElem->seg = *curHead->seg;
+			newElem->seg->tStart = t;
+			curHead->seg->tEnd = t;
+
+			newElem->next = (side == SIDE_S_FL) ? segsLeft : segsRight;
+			curHead->next = (side == SIDE_S_FL) ? segsRight : segsLeft;
+			segsLeft  = (side == SIDE_S_FL) ? newElem : curHead;
+			segsRight = (side == SIDE_S_FL) ? curHead : newElem;
+			break;
+		default:
+			// something is wrong here
+			break;
 		}
 
-		int numer, denom;
-		_intersect(
-			rootSeg->line->ax, rootSeg->line->ay,
-			rootSeg->line->bx, rootSeg->line->by,
-			curHead->seg->line->ax, curHead->seg->line->ay,
-			curHead->seg->line->bx, curHead->seg->line->by, &numer, &denom
-		);
-
-		if (denom == 0) {
-			// they are parallel
-			if (numer > 0) {
-				// put it to the left
-				curHead->next = segsLeft;
-				segsLeft = curHead;
-			}
-			else {
-				// put it to the right
-				curHead->next = segsRight;
-				segsRight = curHead;
-			}
-		}
-		else {
-			float t = (float)numer / denom;
-			if (t > curHead->seg->tStart + MATCH_TOLERANCE && t < curHead->seg->tEnd - MATCH_TOLERANCE) {
-				// it splits the segment
-				PVS2D_SegStack* newElem = (PVS2D_SegStack*)malloc(sizeof(PVS2D_SegStack));
-				newElem->seg = (PVS2D_Seg*)malloc(sizeof(PVS2D_Seg));
-				newElem->seg->tStart = t;
-				newElem->seg->tEnd = curHead->seg->tEnd;
-				newElem->seg->line = curHead->seg->line;
-				newElem->seg->opq = curHead->seg->opq;
-				curHead->seg->tEnd = t;
-				if (denom < 0) {
-					// tEnd point of curHead was to the left
-					// therefore tStart point is to the right
-					// since point tEnd is to the left, then newElem should go to the left
-					newElem->next = segsLeft;
-					segsLeft = newElem;
-					curHead->next = segsRight;
-					segsRight = curHead;
-				}
-				else {
-					newElem->next = segsRight;
-					segsRight = newElem;
-					curHead->next = segsLeft;
-					segsLeft = curHead;
-				}
-			}
-			else {
-				// so the line doesn't split the segment
-				// therefore we just add it to the appropriate list
-				// the problem is that one of its vertices can be on the line 
-				// so instead of checking one of its vertices we just use the middle point of seg
-				// since both of its vertices can't be on the line, the middle is 
-				// guaranteed to be far enough from it
-				float middle = (curHead->seg->tStart + curHead->seg->tEnd) / 2;
-				// if denom > 0 then order is tEnd -> tStart -> line
-				// else order is tStart -> tEnd -> line
-				if (denom > 0 && middle < t || denom < 0 && middle > t) {
-					// then segment is to the left
-					curHead->next = segsLeft;
-					segsLeft = curHead;
-				}
-				else {
-					curHead->next = segsRight;
-					segsRight = curHead;
-				}
-			}
-		}
 	}
 	// now all segments are sorted to their lists. 
+	// now we also have to calculate tSplitStart and tSplitEnd
+	// this is done by each node descending its children and "cutting" their split segment by itself
 	// time for recursion
 	if (segsLeft == 0) {
 		// we don't have any segs to the left, therefore its a leaf.
@@ -232,6 +315,8 @@ int _buildBSP(PVS2D_BSPTreeNode* cur_node, PVS2D_SegStack* cur_segs) {
 		if (rez != 0) return rez;   // error encountered
 		cur_node->left = newNode;
 		cur_node->leftLeaf = 0;
+		// crop left children
+		_cropSplitSegs(newNode, cur_node->line, 1);
 	}
 
 	if (segsRight == 0) {
@@ -246,8 +331,11 @@ int _buildBSP(PVS2D_BSPTreeNode* cur_node, PVS2D_SegStack* cur_segs) {
 		if (rez != 0) return rez;   // error encountered
 		cur_node->right = newNode;
 		cur_node->rightLeaf = 0;
+		// crop right children
+		_cropSplitSegs(newNode, cur_node->line, 0);
 	}
 	// nothing seems needs freeing.
+
 	return 0;
 
 };
