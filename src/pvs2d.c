@@ -206,7 +206,7 @@ char _split(PVS2D_Line* line, PVS2D_Seg* seg, float* tDest) {
 
 };
 
-int _buildBSP(PVS2D_BSPTreeNode* cur_node, PVS2D_SegStack* cur_segs) {
+int _buildBSP(PVS2D_BSPTreeNode* cur_node, PVS2D_SegStack* cur_segs, unsigned int* leafIndex) {
 	DBG_ASSERT(cur_node, -1, "cur_node can't be NULL (node must be allocated before calling the function)")
 	DBG_ASSERT(cur_segs, -1, "cur_segs can't be NULL (segment array can't have 0 segments)");
 	cur_node->left = 0;
@@ -222,10 +222,8 @@ int _buildBSP(PVS2D_BSPTreeNode* cur_node, PVS2D_SegStack* cur_segs) {
 
 	PVS2D_Seg* rootSeg = 0;
 	unsigned int minsplits = -1;        // UINT_MAX
-	static int leafIndex = 1;
 	// the index of leaves, tells the amount of leaves compiled.
 	// the static is used instead of global variable to reduce junk.
-	// also note that leaf indices count from 1 instead of 0.
 	// this was done in order to not use uint max for the same thing, 
 	// so the leaf 0 is 'invalid' leaf
 
@@ -314,12 +312,12 @@ int _buildBSP(PVS2D_BSPTreeNode* cur_node, PVS2D_SegStack* cur_segs) {
 	if (segsLeft == 0) {
 		// we don't have any segs to the left, therefore its a leaf.
 		cur_node->left = 0;
-		cur_node->leftLeaf = leafIndex++;
+		cur_node->leftLeaf = (*leafIndex)++;
 	}
 	else {
 		PVS2D_BSPTreeNode* newNode = (PVS2D_BSPTreeNode*)malloc(sizeof(PVS2D_BSPTreeNode));
 		DBG_ASSERT(newNode, -1, "Failed to allocate new BSP tree node");
-		int rez = _buildBSP(newNode, segsLeft);
+		int rez = _buildBSP(newNode, segsLeft, leafIndex);
 		if (rez != 0) return rez;   // error encountered
 		cur_node->left = newNode;
 		cur_node->leftLeaf = 0;
@@ -330,12 +328,12 @@ int _buildBSP(PVS2D_BSPTreeNode* cur_node, PVS2D_SegStack* cur_segs) {
 	if (segsRight == 0) {
 		// we don't have any segs to the right, therefore its a leaf
 		cur_node->right = 0;
-		cur_node->rightLeaf = leafIndex++;
+		cur_node->rightLeaf = (*leafIndex)++;
 	}
 	else {
 		PVS2D_BSPTreeNode* newNode = (PVS2D_BSPTreeNode*)malloc(sizeof(PVS2D_BSPTreeNode));
 		DBG_ASSERT(newNode, -1, "Failed to allocate new BSP tree node");
-		int rez = _buildBSP(newNode, segsRight);
+		int rez = _buildBSP(newNode, segsRight, leafIndex);
 		if (rez != 0) return rez;   // error encountered
 		cur_node->right = newNode;
 		cur_node->rightLeaf = 0;
@@ -427,7 +425,8 @@ int PVS2D_BuildBSPTree(int* segs, unsigned int segsC, PVS2D_BSPTreeNode* rootDes
 		free(prLine);
 		prLine = next;
 	}
-	return _buildBSP(rootDest, prSegs);
+	unsigned int leafIndex = 0;
+	return _buildBSP(rootDest, prSegs, &leafIndex);
 
 };
 
@@ -888,7 +887,12 @@ int _buildPortals(PVS2D_BSPTreeNode* node, PVS2D_PortalStack* adjacent) {
 		}
 		break;
 	}
-	// do we need any more cleanup?
+	//// cleanup tportals stack
+	//for (PVS2D_PortalStack* prt = tportals; prt;) {
+	//	PVS2D_PortalStack* nxt = prt->next;
+	//	free(prt);
+	//	prt = nxt;
+	//}
 	return 0;
 }
 
@@ -896,3 +900,87 @@ int PVS2D_BuildPortals(PVS2D_BSPTreeNode* root) {
 	return _buildPortals(root, 0);
 }
 
+unsigned int _findLeafCount(PVS2D_BSPTreeNode* node) {
+	unsigned int ret = 0;
+	if (node->left) {
+		ret = _findLeafCount(node->left);
+	}
+	else {
+		ret = node->leftLeaf;
+	}
+	if (node->right) {
+		ret = max(ret, _findLeafCount(node->right));
+	}
+	else {
+		ret = max(ret, node->rightLeaf);
+	}
+	return ret;
+}
+
+void _buildLeafGraphFromPortals(PVS2D_BSPTreeNode* node, PVS2D_LeafGraphNode* nodes) {
+	for (PVS2D_PortalStack* prt = node->portals; prt; prt = prt->next) {
+		if (prt->portal->seg.opq)
+			continue;		// we are interested only in transparent portals connecting leaves
+		unsigned int lleaf = prt->portal->leftLeaf;
+		unsigned int rleaf = prt->portal->rightLeaf;
+		if (isinf(prt->portal->seg.tStart) || isinf(prt->portal->seg.tEnd)) {
+			// nodes that contain infinite portals must be oob ones
+			nodes[lleaf].oob = 1;
+			nodes[rleaf].oob = 1;
+		}
+		PVS2D_LGEdgeStack* lElem = (PVS2D_LGEdgeStack*)malloc(sizeof(PVS2D_LGEdgeStack));
+		lElem->prt = prt->portal;
+		lElem->node = nodes + rleaf;
+		lElem->next = nodes[lleaf].adjs;
+		nodes[lleaf].adjs = lElem;
+		PVS2D_LGEdgeStack* rElem = (PVS2D_LGEdgeStack*)malloc(sizeof(PVS2D_LGEdgeStack));
+		rElem->prt = prt->portal;
+		rElem->node = nodes + lleaf;
+		rElem->next = nodes[rleaf].adjs;
+		nodes[rleaf].adjs = rElem;
+	}
+	if (node->left) {
+		_buildLeafGraphFromPortals(node->left, nodes);
+	}
+	if (node->right) {
+		_buildLeafGraphFromPortals(node->right, nodes);
+	}
+}
+
+void _dfsTag(PVS2D_LeafGraphNode* node, char* tagged) {
+	if (tagged[node->leaf])
+		return;
+	tagged[node->leaf] = 1;
+	node->oob = 1;
+	for (PVS2D_LGEdgeStack* edge = node->adjs; edge; edge = edge->next) {
+		_dfsTag(edge->node, tagged);
+	}
+}
+
+PVS2D_LeafGraphNode* PVS2D_BuildLeafGraph(PVS2D_BSPTreeNode* root, unsigned int* nodesCDest) {
+	DBG_ASSERT(root, 0, "'root' can't be nullptr");
+	DBG_ASSERT(nodesCDest, 0, "'nodesCDest' can't be nullptr");
+	int leafC = _findLeafCount(root) + 1;
+	// be aware of the fact that leaves count from 0
+	DBG_ASSERT(leafC, 0, "Incorrect BSP Tree data");
+	PVS2D_LeafGraphNode* nodes = (PVS2D_LeafGraphNode*)calloc(leafC, sizeof(PVS2D_LeafGraphNode));
+	DBG_ASSERT(nodes, 0, "Failed to create leaf graph nodes array");
+	*nodesCDest = leafC;
+	for (int i = 0; i < leafC; i++) {
+		nodes[i].leaf = i;
+		nodes[i].adjs = 0;
+		nodes[i].oob = 0;
+	}
+	_buildLeafGraphFromPortals(root, nodes);
+
+	// now we must spread oob tag
+	char* tagged = (char*)calloc(leafC, sizeof(char));
+	// kind of array that keeps track of what nodes we visited
+	for (int i = 0; i < leafC; i++) {
+		if (nodes[i].oob) {
+			_dfsTag(nodes + i, tagged);
+		}
+	}
+	free(tagged);
+	return nodes;
+}
