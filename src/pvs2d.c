@@ -997,3 +997,177 @@ PVS2D_LeafGraphNode* PVS2D_BuildLeafGraph(PVS2D_BSPTreeNode* root, unsigned int*
 	free(tagged);
 	return nodes;
 }
+
+// a1x, a1y, a2x, a2y represent a lineA, 
+// b1x, b1y, b2x, b2y represent a lineB
+// area "within a frustum" is area that lineA will traverse through
+// when is rotated clockwise around the point of intersection of two lines
+// before becoming lineB
+typedef struct _frustum {
+	double a1x, a1y, a2x, a2y, b1x, b1y, b2x, b2y;
+} _frustum;
+
+void _makeFrustumBetweenSegs(PVS2D_Seg* seg1, PVS2D_Seg* seg2, _frustum* frustum) {
+	DBG_ASSERT(!isinf(seg1->tStart), , "Input segments can't be infinite");
+	DBG_ASSERT(!isinf(seg2->tStart), , "Input segments can't be infinite");
+	DBG_ASSERT(!isinf(seg1->tEnd), , "Input segments can't be infinite");
+	DBG_ASSERT(!isinf(seg2->tEnd), , "Input segments can't be infinite");
+	frustum->a1x = seg1->line->ax + seg1->tStart * (seg1->line->bx - seg1->line->ax);
+	frustum->a1y = seg1->line->ay + seg1->tStart * (seg1->line->by - seg1->line->ay);
+	frustum->a2x = seg2->line->ax + seg2->tStart * (seg2->line->bx - seg2->line->ax);
+	frustum->a2y = seg2->line->ay + seg2->tStart * (seg2->line->by - seg2->line->ay);
+
+	frustum->b1x = seg1->line->ax + seg1->tEnd * (seg1->line->bx - seg1->line->ax);
+	frustum->b1y = seg1->line->ay + seg1->tEnd * (seg1->line->by - seg1->line->ay);
+	frustum->b2x = seg2->line->ax + seg2->tEnd * (seg2->line->bx - seg2->line->ax);
+	frustum->b2y = seg2->line->ay + seg2->tEnd * (seg2->line->by - seg2->line->ay);
+
+	// the dot product here
+	if (
+		(frustum->b1x - frustum->a1x) * (frustum->b2x - frustum->a2x) +
+		(frustum->b1y - frustum->a1y) * (frustum->b2y - frustum->a2y) > 0
+	) {
+		// the segments were oriented in the same way, have to change the direction,
+		// so the lines cross inside the quadrangle
+		double t;
+		t = frustum->a2x;
+		frustum->a2x = frustum->b2x;
+		frustum->b2x = t;
+		t = frustum->a2y;
+		frustum->a2y = frustum->b2y;
+		frustum->b2y = t;
+	}
+	// now it is guaranteed that lines cross eachother
+	
+	// but they can be wrongly oriented (the "inside" area might not contain the segments)
+	// gotta fix that. the point b1 must be to the left of lineA
+	
+	// the cross product here
+	if (
+		(frustum->a2x - frustum->a1x) * (frustum->b1y - frustum->a1y) <
+		(frustum->a2y - frustum->a1y) * (frustum->b1x - frustum->a1x)
+	) {
+		// the b1 is to the right of lineA, have to swap lineA and lineB
+		double t;
+		t = frustum->a1x;
+		frustum->a1x = frustum->b1x;
+		frustum->b1x = t;
+		t = frustum->a2x;
+		frustum->a2x = frustum->b2x;
+		frustum->b2x = t;
+		t = frustum->a1y;
+		frustum->a1y = frustum->b1y;
+		frustum->b1y = t;
+		t = frustum->a2y;
+		frustum->a2y = frustum->b2y;
+		frustum->b2y = t;
+	}
+}
+
+char _isInFrustum(_frustum* frustum, double x, double y) {
+	// two cross products
+	return
+		((frustum->a2x - frustum->a1x) * (y - frustum->a1y) < (frustum->a2y - frustum->a1y) * (x - frustum->a1x)) &&
+		((frustum->b2x - frustum->b1x) * (y - frustum->b1y) > (frustum->b2y - frustum->b1y) * (x - frustum->b1x));
+}
+
+// here you might end up with the fact that tStart > tEnd, which is kinda mathematically correct
+// you might also end up with one or two of them being inf. that is also mathematically correct
+// lastly, if line is ON the line of frustrum, you'll get nans
+// god bless float-point arithmetics
+void _cropLineByFrustum(PVS2D_Line* line, _frustum* frustum, double* tStartDest, double* tEndDest) {
+	*tStartDest = -INFINITY;
+	*tEndDest = INFINITY;
+	
+	double tAn, tAd, tBn, tBd;
+	_intersectF(
+		frustum->a1x, frustum->a1y, frustum->a2x, frustum->a2y, 
+		line->ax, line->ay, line->bx, line->by, &tAn, &tAd
+	);
+	_intersectF(
+		frustum->b1x, frustum->b1y, frustum->b2x, frustum->b2y,
+		line->ax, line->ay, line->bx, line->by, &tBn, &tBd
+	);
+	// now we must determine which part of line is inside the frustum
+	if (fabs(tAd) > MATCH_TOLERANCE) {
+		if (tAd < 0) {
+			// line goes to the right relatively to frustrum's lineA
+			*tEndDest = min(*tEndDest, tAn / tAd);
+		}
+		else {
+			*tStartDest = max(*tStartDest, tAn / tAd);
+		}
+	}
+	if (fabs(tBd) > MATCH_TOLERANCE) {
+		if (tBd < 0) {
+			*tStartDest = max(*tStartDest, tBn / tBd);
+		}
+		else {
+			*tEndDest = min(*tEndDest, tBn / tBd);
+		}
+	}
+
+}
+
+typedef struct _frustumStack {
+	struct _frustum* frustum;
+	struct _frustumStack* next;
+} _frustumStack;
+
+void _dfsPVSCalc(PVS2D_LeafGraphNode* node, PVS2D_Seg* prevSeg, _frustumStack* frs, char* visited, char* pvs) {
+	pvs[node->leaf] = 1;
+	for (PVS2D_LGEdgeStack* edge = node->adjs; edge; edge = edge->next) {
+		if (!prevSeg) {
+			// we are at root node
+			// all neighboor nodes are visible from root
+			visited[edge->node->leaf] = 1;
+			_dfsPVSCalc(edge->node, &edge->prt->seg, frs, visited, pvs);
+			visited[edge->node->leaf] = 0;
+		}
+		else {
+			if (!visited[edge->node->leaf]) {
+				// go through all of the frustums in frs and crop the segment accordingly
+				double tStart = edge->prt->seg.tStart, tEnd = edge->prt->seg.tEnd;
+				char ok = 1;
+				for (_frustumStack* fr = frs; fr; fr = fr->next) {
+					double ttStart = 0, ttEnd = 0;
+					_cropLineByFrustum(edge->prt->seg.line, fr->frustum, &ttStart, &ttEnd);
+					tStart = max(tStart, ttStart);
+					tEnd = min(tEnd, ttEnd);
+					if (tStart > tEnd + MATCH_TOLERANCE) {
+						// it's not intersecting it anymore
+						ok = 0;
+						break;
+					}
+				}
+				if (ok) {
+					// we can go here
+
+					// create new frustum and put it into stack
+					// since we are using recursion, we can just 
+					// allocate it on stack, and be fine with it
+					_frustum newFrustum = { 0 };
+					_makeFrustumBetweenSegs(prevSeg, &edge->prt->seg, &newFrustum);
+					_frustumStack newNode = { 0 };
+					newNode.frustum = &newFrustum;
+					newNode.next = frs;
+					visited[edge->node->leaf] = 1;
+					_dfsPVSCalc(edge->node, &edge->prt->seg, &newNode, visited, pvs);
+					visited[edge->node->leaf] = 0;
+					// no need to delete anything since we allocated on stack :)
+				}
+			}
+		}
+	}
+}
+
+char* PVS2D_GetLeafPVS(PVS2D_LeafGraphNode* node, unsigned int leafC) {
+	DBG_ASSERT(!node->oob, 0, "Can't build PVS of Out-Of-Bounds node");
+	char* visited = (char*)calloc(leafC, sizeof(char));
+	DBG_ASSERT(visited, 0, "Failed to create array of visited nodes");
+	char* pvs = (char*)calloc(leafC, sizeof(char));
+	DBG_ASSERT(pvs, 0, "Failed to create PVS array");
+	_dfsPVSCalc(node, 0, 0, visited, pvs);
+	free(visited);
+	return pvs;
+}
