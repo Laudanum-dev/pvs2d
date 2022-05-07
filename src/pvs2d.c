@@ -59,7 +59,7 @@ building PVS:
 #endif
 #endif
 
-const float MATCH_TOLERANCE = 0.0625f;
+const double MATCH_TOLERANCE = 0.0625f;
 // the so called EPS. used to fix some errors that inevitably happen with float arithmetics
 
 static inline char _collinear(int ax, int ay, int bx, int by, int cx, int cy) {
@@ -72,9 +72,15 @@ static inline void _intersect(int ax, int ay, int bx, int by, int cx, int cy, in
 	*denomDest = nx * (cy - dy) - ny * (cx - dx);
 };
 
+static inline void _intersectF(double ax, double ay, double bx, double by, double cx, double cy, double dx, double dy, double* numerDest, double* denomDest) {
+	double nx = bx - ax, ny = by - ay;
+	*numerDest = nx * (cy - ay) - ny * (cx - ax);
+	*denomDest = nx * (cy - dy) - ny * (cx - dx);
+};
+
 // returns 0 if vector (ax, ay) is on the right side of (bx, by)
 // returns anything else if not
-static inline unsigned int _side(float ax, float ay, float bx, float by) {
+static inline unsigned int _side(double ax, double ay, double bx, double by) {
 	return (ax * by > ay * bx);
 }
 
@@ -88,35 +94,37 @@ int _cropSplitSegs(PVS2D_BSPTreeNode* node, PVS2D_Line* line, int left) {
 		node->line->ax, node->line->ay, node->line->bx, node->line->by,
 		&numer, &denom
 	);
-	if (denom == 0) {
-		// parallel. do nothing
-		return 0;
-	}
-	float t = (float)numer / denom;
-	if (left) {
-		// crop the splitseg so it is to the left
-		if (denom > 0) {
-			node->tSplitEnd = min(t, node->tSplitEnd);
+	if (denom != 0) {
+		// crop only if not parallel.
+		double t = (double)numer / denom;
+		if (left) {
+			// crop the splitseg so it is to the left
+			if (denom > 0) {
+				node->tSplitEnd = min(t, node->tSplitEnd);
+			}
+			else {
+				node->tSplitStart = max(t, node->tSplitStart);
+			}
 		}
 		else {
-			node->tSplitStart = max(t, node->tSplitStart);
-		}
-	}
-	else {
-		// crop the splitseg so it is to the right
-		if (denom > 0) {
-			node->tSplitStart = max(t, node->tSplitStart);
-		}
-		else {
-			node->tSplitEnd = min(t, node->tSplitEnd);
+			// crop the splitseg so it is to the right
+			if (denom > 0) {
+				node->tSplitStart = max(t, node->tSplitStart);
+			}
+			else {
+				node->tSplitEnd = min(t, node->tSplitEnd);
+			}
 		}
 	}
 	if (node->left) {
-		_cropSplitSegs(node->left, line, left);
+		int rez = _cropSplitSegs(node->left, line, left);
+		if (rez) return rez;
 	}
 	if (node->right) {
-		_cropSplitSegs(node->right, line, left);
+		int rez = _cropSplitSegs(node->right, line, left);
+		if (rez) return rez;
 	}
+	return 0;
 }
 
 enum _side {
@@ -135,7 +143,7 @@ enum _side {
 // the orientation is being treated as if we would stand in line's point A looked 
 // on the point B also, if the those bits aren't 00, then the function can output the 
 // parameter of point on the segment's line of where the collision happens.
-char _split(PVS2D_Line* line, PVS2D_Seg* seg, float* tDest) {
+char _split(PVS2D_Line* line, PVS2D_Seg* seg, double* tDest) {
 	if (seg->line == line) {
 		// collinear.
 		return SIDE_COL;
@@ -164,7 +172,7 @@ char _split(PVS2D_Line* line, PVS2D_Seg* seg, float* tDest) {
 	}
 	else {
 		// not parallel. calculate the split point
-		float t = (float)numer / denom;
+		double t = (double)numer / denom;
 		if (tDest) *tDest = t;
 		
 		if (t > seg->tStart + MATCH_TOLERANCE && t < seg->tEnd - MATCH_TOLERANCE) {
@@ -182,7 +190,7 @@ char _split(PVS2D_Line* line, PVS2D_Seg* seg, float* tDest) {
 			// doesn't split the segment.
 			// in order to get more accurate result, we will use middle point of the segment
 			// to determine the side it is on
-			float middle = (seg->tStart + seg->tEnd) / 2;
+			double middle = (seg->tStart + seg->tEnd) / 2;
 			// we need to take in account the orientation of the segment in order for our magic to work
 			// the rest here are mostly self-explainatory
 			if (denom < 0) {
@@ -256,7 +264,7 @@ int _buildBSP(PVS2D_BSPTreeNode* cur_node, PVS2D_SegStack* cur_segs, unsigned in
 		nextHead = curHead->next;
 		// this juncture above was used instead of for loop to allow us modifying curHead->next ptr 
 
-		float t;
+		double t;
 		char side = _split(rootSeg->line, curHead->seg, &t);
 
 		switch (side) {
@@ -318,11 +326,12 @@ int _buildBSP(PVS2D_BSPTreeNode* cur_node, PVS2D_SegStack* cur_segs, unsigned in
 		PVS2D_BSPTreeNode* newNode = (PVS2D_BSPTreeNode*)malloc(sizeof(PVS2D_BSPTreeNode));
 		DBG_ASSERT(newNode, -1, "Failed to allocate new BSP tree node");
 		int rez = _buildBSP(newNode, segsLeft, leafIndex);
-		if (rez != 0) return rez;   // error encountered
+		if (rez) return rez;   // error encountered
 		cur_node->left = newNode;
 		cur_node->leftLeaf = 0;
 		// crop left children
-		_cropSplitSegs(newNode, cur_node->line, 1);
+		rez = _cropSplitSegs(newNode, cur_node->line, 1);
+		if (rez) return rez;	// error encountered
 	}
 
 	if (segsRight == 0) {
@@ -334,11 +343,12 @@ int _buildBSP(PVS2D_BSPTreeNode* cur_node, PVS2D_SegStack* cur_segs, unsigned in
 		PVS2D_BSPTreeNode* newNode = (PVS2D_BSPTreeNode*)malloc(sizeof(PVS2D_BSPTreeNode));
 		DBG_ASSERT(newNode, -1, "Failed to allocate new BSP tree node");
 		int rez = _buildBSP(newNode, segsRight, leafIndex);
-		if (rez != 0) return rez;   // error encountered
+		if (rez) return rez;   // error encountered
 		cur_node->right = newNode;
 		cur_node->rightLeaf = 0;
 		// crop right children
-		_cropSplitSegs(newNode, cur_node->line, 0);
+		rez = _cropSplitSegs(newNode, cur_node->line, 0);
+		if (rez) return rez;	// error encountered
 	}
 	// nothing seems needs freeing.
 
@@ -373,7 +383,7 @@ int PVS2D_BuildBSPTree(int* segs, unsigned int segsC, PVS2D_BSPTreeNode* rootDes
 		DBG_ASSERT(newSeg, -1, "Failed to allocate new segment stack node");
 		newSeg->seg = (PVS2D_Seg*)malloc(sizeof(PVS2D_Seg));
 		DBG_ASSERT(newSeg->seg, -1, "Failed to allocate new segment");
-		float tStart = 0.0f, tEnd = 1.0f;
+		double tStart = 0.0, tEnd = 1.0;
 		if (match == 0) {
 			_lstack* newLine = (_lstack*)malloc(sizeof(_lstack));
 			DBG_ASSERT(newLine, -1, "Failed to allocate new line into stack");
@@ -394,15 +404,15 @@ int PVS2D_BuildBSPTree(int* segs, unsigned int segsC, PVS2D_BSPTreeNode* rootDes
 		}
 		else {
 			if (ax == bx) {
-				tStart = (float)(ay - match->line->ay) / (match->line->by - match->line->ay);
-				tEnd = (float)(by - match->line->ay) / (match->line->by - match->line->ay);
+				tStart = (double)(ay - match->line->ay) / (match->line->by - match->line->ay);
+				tEnd = (double)(by - match->line->ay) / (match->line->by - match->line->ay);
 			}
 			else {
-				tStart = (float)(ax - match->line->ax) / (match->line->bx - match->line->ax);
-				tEnd = (float)(bx - match->line->ax) / (match->line->bx - match->line->ax);
+				tStart = (double)(ax - match->line->ax) / (match->line->bx - match->line->ax);
+				tEnd = (double)(bx - match->line->ax) / (match->line->bx - match->line->ax);
 			}
 			if (tStart > tEnd) {
-				float _t = tStart;
+				double _t = tStart;
 				tStart = tEnd;
 				tEnd = _t;
 			}
@@ -430,7 +440,7 @@ int PVS2D_BuildBSPTree(int* segs, unsigned int segsC, PVS2D_BSPTreeNode* rootDes
 
 };
 
-unsigned int PVS2D_FindLeafOfPoint(PVS2D_BSPTreeNode* root, float x, float y) {
+unsigned int PVS2D_FindLeafOfPoint(PVS2D_BSPTreeNode* root, double x, double y) {
 	if (_side(
 		root->line->bx - root->line->ax,
 		root->line->by - root->line->ay,
@@ -447,14 +457,14 @@ unsigned int PVS2D_FindLeafOfPoint(PVS2D_BSPTreeNode* root, float x, float y) {
 }
 
 typedef struct _pairfc {
-	float p;
+	double p;
 	signed char d;
 } _pairfc;
 
 int _pairfc_cmp(const void* a, const void* b) {
-	float ap = ((_pairfc*)a)->p;
-	float bp = ((_pairfc*)b)->p;
-	if (fabsf(ap - bp) < MATCH_TOLERANCE) {
+	double ap = ((_pairfc*)a)->p;
+	double bp = ((_pairfc*)b)->p;
+	if (fabs(ap - bp) < MATCH_TOLERANCE) {
 		signed char ad = ((_pairfc*)a)->d;
 		signed char bd = ((_pairfc*)b)->d;
 		if (ad < bd) return 1;
@@ -494,7 +504,7 @@ PVS2D_PortalStack* _portalsOfNode(PVS2D_BSPTreeNode* node) {
 	th[segsC++].d = 1;
 	qsort(th, segsC, sizeof(_pairfc), _pairfc_cmp);
 	int l = 1;
-	float prevSeg = NAN;
+	double prevSeg = NAN;
 	PVS2D_PortalStack* portals = 0;
 	for (int i = 0; i < segsC; i++) {
 		if (i == 0 && th[i].d == 1) {
@@ -590,7 +600,7 @@ int _buildPortals(PVS2D_BSPTreeNode* node, PVS2D_PortalStack* adjacent) {
 		adjNxt = adjNxt->next;
 
 		// process the portal
-		float t;
+		double t;
 		char side = _split(node->line, &adjCur->portal->seg, &t);
 		switch (side) {
 		case SIDE_COL:
@@ -929,11 +939,13 @@ void _buildLeafGraphFromPortals(PVS2D_BSPTreeNode* node, PVS2D_LeafGraphNode* no
 			nodes[rleaf].oob = 1;
 		}
 		PVS2D_LGEdgeStack* lElem = (PVS2D_LGEdgeStack*)malloc(sizeof(PVS2D_LGEdgeStack));
+		DBG_ASSERT(lElem, , "Failed to create leaf edge stack node");
 		lElem->prt = prt->portal;
 		lElem->node = nodes + rleaf;
 		lElem->next = nodes[lleaf].adjs;
 		nodes[lleaf].adjs = lElem;
 		PVS2D_LGEdgeStack* rElem = (PVS2D_LGEdgeStack*)malloc(sizeof(PVS2D_LGEdgeStack));
+		DBG_ASSERT(rElem, , "Failed to create leaf edge stack node");
 		rElem->prt = prt->portal;
 		rElem->node = nodes + lleaf;
 		rElem->next = nodes[rleaf].adjs;
@@ -953,7 +965,8 @@ void _dfsTag(PVS2D_LeafGraphNode* node, char* tagged) {
 	tagged[node->leaf] = 1;
 	node->oob = 1;
 	for (PVS2D_LGEdgeStack* edge = node->adjs; edge; edge = edge->next) {
-		_dfsTag(edge->node, tagged);
+		if (!edge->prt->seg.opq)
+			_dfsTag(edge->node, tagged);
 	}
 }
 

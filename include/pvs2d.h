@@ -13,7 +13,7 @@ typedef struct PVS2D_Line {
 
 typedef struct PVS2D_Seg {
 	struct PVS2D_Line* line;
-	float tStart, tEnd;
+	double tStart, tEnd;
 	int opq;
 } PVS2D_Seg;
 
@@ -30,8 +30,8 @@ typedef struct PVS2D_BSPTreeNode {
 	struct PVS2D_Line* line;
 	struct PVS2D_SegStack* segs;
 	
-	float tSplitStart;
-	float tSplitEnd;
+	double tSplitStart;
+	double tSplitEnd;
 	struct PVS2D_PortalStack* portals;
 } PVS2D_BSPTreeNode;
 
@@ -59,6 +59,11 @@ typedef struct PVS2D_LeafGraphNode {
 	struct PVS2D_LeafGraphEdgeStack* adjs;
 } PVS2D_LeafGraphNode;
 
+typedef struct PVS2D_LeafGraphNodeStack {
+	PVS2D_LeafGraphNode* node;
+	struct PVS2D_LeafGraphNodeStack* next;
+} PVS2D_LeafGraphNodeStack, PVS2D_LGNodeStack;
+ 
 // --------------------------------------------------------
 //                  INTERFACE FUNCTIONS
 // --------------------------------------------------------
@@ -70,7 +75,7 @@ int PVS2D_BuildBSPTree(
 
 unsigned int PVS2D_FindLeafOfPoint(
 	PVS2D_BSPTreeNode* root,
-	float x, float y
+	double x, double y
 );
 
 int PVS2D_BuildPortals(
@@ -83,7 +88,7 @@ PVS2D_LeafGraphNode* PVS2D_BuildLeafGraph(
 );
 
 char* PVS2D_GetLeafPVS(
-	PVS2D_LeafGraphNode* node
+	PVS2D_LeafGraphNode* node, unsigned int leafC
 );
 
 #endif
