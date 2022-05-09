@@ -78,6 +78,12 @@ unsigned int PVS2D_FindLeafOfPoint(
 	double x, double y
 );
 
+void PVS2D_FindLeafsOfSegment(
+	PVS2D_BSPTreeNode* root,
+	double ax, double ay, double bx, double by,
+	char* leafbitset
+);
+
 int PVS2D_BuildPortals(
 	PVS2D_BSPTreeNode* root
 );

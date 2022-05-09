@@ -456,6 +456,71 @@ unsigned int PVS2D_FindLeafOfPoint(PVS2D_BSPTreeNode* root, double x, double y) 
 	}
 }
 
+void PVS2D_FindLeafsOfSegment(PVS2D_BSPTreeNode* root, double ax, double ay, double bx, double by, char* leafbitset) {
+	double numer, denom, t = 0;
+	_intersectF(
+		root->line->ax, root->line->ay, root->line->bx, root->line->by,
+		ax, ay, bx, by, &numer, &denom
+	);
+	char l = 0, r = 0;
+	if (fabs(denom) < MATCH_TOLERANCE) {
+		// parallel.
+		if (numer > -MATCH_TOLERANCE) {
+			// to the left
+			l = 1;
+		}
+		if (numer < MATCH_TOLERANCE) {
+			// to the right
+			r = 1;
+		}
+	}
+	else {
+		// not parallel. calculate the split point
+		t = numer / denom;
+
+		if (t > MATCH_TOLERANCE && t < 1 - MATCH_TOLERANCE) {
+			// splits the segment
+			l = 1;
+			r = 1;
+		}
+		else {
+			if (denom < 0) {
+				if (0.5 > t) {
+					l = 1;
+				}
+				else {
+					r = 1;
+				}
+			}
+			else {
+				if (0.5 > t) {
+					r = 1;
+				}
+				else {
+					l = 1;
+				}
+			}
+		}
+	}
+	if (l) {
+		if (root->left) {
+			PVS2D_FindLeafsOfSegment(root->left, ax, ay, bx, by, leafbitset);
+		}
+		else {
+			leafbitset[root->leftLeaf] = 1;
+		}
+	}
+	if (r) {
+		if (root->right) {
+			PVS2D_FindLeafsOfSegment(root->right, ax, ay, bx, by, leafbitset);
+		}
+		else {
+			leafbitset[root->rightLeaf] = 1;
+		}
+	}
+}
+
+
 typedef struct _pairfc {
 	double p;
 	signed char d;
@@ -1022,53 +1087,114 @@ void _makeFrustumBetweenSegs(PVS2D_Seg* seg1, PVS2D_Seg* seg2, _frustum* frustum
 	frustum->b2x = seg2->line->ax + seg2->tEnd * (seg2->line->bx - seg2->line->ax);
 	frustum->b2y = seg2->line->ay + seg2->tEnd * (seg2->line->by - seg2->line->ay);
 
-	// the dot product here
+	// if b1 is to the right of a1a2 line -> swap a1 and b1
 	if (
-		(frustum->b1x - frustum->a1x) * (frustum->b2x - frustum->a2x) +
-		(frustum->b1y - frustum->a1y) * (frustum->b2y - frustum->a2y) > 0
+		(frustum->b1x - frustum->a1x) * (frustum->a2y - frustum->a1y) >
+		(frustum->b1y - frustum->a1y) * (frustum->a2x - frustum->a1x) + MATCH_TOLERANCE
 	) {
-		// the segments were oriented in the same way, have to change the direction,
-		// so the lines cross inside the quadrangle
-		double t;
-		t = frustum->a2x;
-		frustum->a2x = frustum->b2x;
-		frustum->b2x = t;
-		t = frustum->a2y;
-		frustum->a2y = frustum->b2y;
-		frustum->b2y = t;
-	}
-	// now it is guaranteed that lines cross eachother
-	
-	// but they can be wrongly oriented (the "inside" area might not contain the segments)
-	// gotta fix that. the point b1 must be to the left of lineA
-	
-	// the cross product here
-	if (
-		(frustum->a2x - frustum->a1x) * (frustum->b1y - frustum->a1y) <
-		(frustum->a2y - frustum->a1y) * (frustum->b1x - frustum->a1x)
-	) {
-		// the b1 is to the right of lineA, have to swap lineA and lineB
 		double t;
 		t = frustum->a1x;
 		frustum->a1x = frustum->b1x;
 		frustum->b1x = t;
-		t = frustum->a2x;
-		frustum->a2x = frustum->b2x;
-		frustum->b2x = t;
 		t = frustum->a1y;
 		frustum->a1y = frustum->b1y;
 		frustum->b1y = t;
+	}
+	// if b2 is to the left of a1a2 line -> swap a2 and b2
+	if (
+		(frustum->b2x - frustum->a1x) * (frustum->a2y - frustum->a1y) <
+		(frustum->b2y - frustum->a1y) * (frustum->a2x - frustum->a1x) - MATCH_TOLERANCE
+	) {
+		double t;
+		t = frustum->a2x;
+		frustum->a2x = frustum->b2x;
+		frustum->b2x = t;
 		t = frustum->a2y;
 		frustum->a2y = frustum->b2y;
 		frustum->b2y = t;
 	}
-}
 
-char _isInFrustum(_frustum* frustum, double x, double y) {
-	// two cross products
-	return
-		((frustum->a2x - frustum->a1x) * (y - frustum->a1y) < (frustum->a2y - frustum->a1y) * (x - frustum->a1x)) &&
-		((frustum->b2x - frustum->b1x) * (y - frustum->b1y) > (frustum->b2y - frustum->b1y) * (x - frustum->b1x));
+	// again
+	// if b1 is to the right of a1a2 line -> swap a1 and b1
+	if (
+		(frustum->b1x - frustum->a1x) * (frustum->a2y - frustum->a1y) >
+		(frustum->b1y - frustum->a1y) * (frustum->a2x - frustum->a1x) + MATCH_TOLERANCE
+	) {
+		double t;
+		t = frustum->a1x;
+		frustum->a1x = frustum->b1x;
+		frustum->b1x = t;
+		t = frustum->a1y;
+		frustum->a1y = frustum->b1y;
+		frustum->b1y = t;
+	}
+	// if b2 is to the left of a1a2 line -> swap a2 and b2
+	if (
+		(frustum->b2x - frustum->a1x) * (frustum->a2y - frustum->a1y) <
+		(frustum->b2y - frustum->a1y) * (frustum->a2x - frustum->a1x) - MATCH_TOLERANCE
+	) {
+		double t;
+		t = frustum->a2x;
+		frustum->a2x = frustum->b2x;
+		frustum->b2x = t;
+		t = frustum->a2y;
+		frustum->a2y = frustum->b2y;
+		frustum->b2y = t;
+	}
+
+	// double check
+	if (
+		(frustum->b1x - frustum->a1x) * (frustum->a2y - frustum->a1y) >
+		(frustum->b1y - frustum->a1y) * (frustum->a2x - frustum->a1x) + MATCH_TOLERANCE
+	) {
+		printf("FUCK\n");
+	}
+	if (
+		(frustum->b2x - frustum->a1x) * (frustum->a2y - frustum->a1y) <
+		(frustum->b2y - frustum->a1y) * (frustum->a2x - frustum->a1x) - MATCH_TOLERANCE
+	) {
+		printf("FUCK 2\n");
+	}
+	//// the dot product here
+	//if (
+	//	(frustum->b1x - frustum->a1x) * (frustum->b2x - frustum->a2x) +
+	//	(frustum->b1y - frustum->a1y) * (frustum->b2y - frustum->a2y) > 0
+	//) {
+	//	// the segments were oriented in the same way, have to change the direction,
+	//	// so the lines cross inside the quadrangle
+	//	double t;
+	//	t = frustum->a2x;
+	//	frustum->a2x = frustum->b2x;
+	//	frustum->b2x = t;
+	//	t = frustum->a2y;
+	//	frustum->a2y = frustum->b2y;
+	//	frustum->b2y = t;
+	//}
+	//// now it is guaranteed that lines cross eachother
+	//
+	//// but they can be wrongly oriented (the "inside" area might not contain the segments)
+	//// gotta fix that. the point b1 must be to the left of lineA
+	//
+	//// the cross product here
+	//if (
+	//	(frustum->a2x - frustum->a1x) * (frustum->b1y - frustum->a1y) <
+	//	(frustum->a2y - frustum->a1y) * (frustum->b1x - frustum->a1x)
+	//) {
+	//	// the b1 is to the right of lineA, have to swap lineA and lineB
+	//	double t;
+	//	t = frustum->a1x;
+	//	frustum->a1x = frustum->b1x;
+	//	frustum->b1x = t;
+	//	t = frustum->a2x;
+	//	frustum->a2x = frustum->b2x;
+	//	frustum->b2x = t;
+	//	t = frustum->a1y;
+	//	frustum->a1y = frustum->b1y;
+	//	frustum->b1y = t;
+	//	t = frustum->a2y;
+	//	frustum->a2y = frustum->b2y;
+	//	frustum->b2y = t;
+	//}
 }
 
 // here you might end up with the fact that tStart > tEnd, which is kinda mathematically correct
@@ -1167,6 +1293,7 @@ char* PVS2D_GetLeafPVS(PVS2D_LeafGraphNode* node, unsigned int leafC) {
 	DBG_ASSERT(visited, 0, "Failed to create array of visited nodes");
 	char* pvs = (char*)calloc(leafC, sizeof(char));
 	DBG_ASSERT(pvs, 0, "Failed to create PVS array");
+	visited[node->leaf] = 1;
 	_dfsPVSCalc(node, 0, 0, visited, pvs);
 	free(visited);
 	return pvs;
