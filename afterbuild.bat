@@ -1,0 +1,1 @@
+copy resources\ C:\Prog\_repo\pvs2d\libpvs2d\build\windows\x64\release
