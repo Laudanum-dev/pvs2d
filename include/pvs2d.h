@@ -363,7 +363,7 @@ typedef struct PVS2D_LeafGraphNodeStack {
  * 
  * @param segs Input array of segments, `5 * segsC` ints. 
  * @param segsC The number of blocks. 
- * @param rootDest The destination of built BSP Tree. Must be allocated calling. 
+ * @param rootDest The destination of built BSP Tree. Must be allocated before calling. 
  * @return int - 0 if ok, something else otherwise. 
  */
 int PVS2D_BuildBSPTree(
