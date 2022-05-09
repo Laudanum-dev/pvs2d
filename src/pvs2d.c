@@ -1,6 +1,7 @@
 #include "pvs2d.h"
 
 #include <stdlib.h>
+#include <math.h>
 
 /*
 segments have pointer to line they are based on
