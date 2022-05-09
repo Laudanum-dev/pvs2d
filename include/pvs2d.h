@@ -1,3 +1,15 @@
+/**
+ * @file pvs2d.h
+ * @author Latypov Ilya (id763281073@gmail.com)
+ * @brief Potentially Visible Sets calculating library. 
+ * @version 0.0.1
+ * @date 2022-05-09
+ * 
+ * Potentially Visible Sets calculating library.
+ * 
+ * @copyright Copyright (c) 2022
+ * 
+ */
 #ifndef PVS2D_H
 #define PVS2D_H
 
