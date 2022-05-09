@@ -1,7 +1,7 @@
 [
 {
   "directory": "c:\\Prog\\_repo\\pvs2d\\libpvs2d",
-  "arguments": ["C:\\Program Files\\Microsoft Visual Studio\\2022\\Preview\\VC\\Tools\\MSVC\\14.32.31326\\bin\\HostX64\\x64\\cl.exe", "/c", "/nologo", "/Iinclude", "/IC:\\Users\\id763\\AppData\\Local\\.xmake\\packages\\r\\raylib\\4.0.0\\4fc0fd88d8404377adc9c6be05adf73e\\include", "/Fobuild\\.objs\\demo\\windows\\x64\\release\\src\\demo.c.obj", "src\\demo.c"],
+  "arguments": ["C:\\Program Files\\Microsoft Visual Studio\\2022\\Preview\\VC\\Tools\\MSVC\\14.32.31326\\bin\\HostX64\\x64\\cl.exe", "/c", "/nologo", "/Iinclude", "/Fobuild\\.objs\\demo\\windows\\x64\\release\\src\\demo.c.obj", "src\\demo.c"],
   "file": "src\\demo.c"
 },
 {
