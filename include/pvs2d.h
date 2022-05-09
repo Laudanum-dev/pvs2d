@@ -143,7 +143,7 @@ typedef struct PVS2D_BSPTreeNode {
 	/**
 	 * @brief Left and right leafs indexes. 
 	 * 
-	 * Indexes of left and right leafs. For example, if this node doesn't have a left child node, 
+	 * For example, if this node doesn't have a left child node, 
 	 * the `leftLeaf` should contain the index of a leaf that is the left subspace.
 	 * 
 	 */
@@ -334,8 +334,6 @@ typedef struct PVS2D_LeafGraphNode {
 typedef struct PVS2D_LeafGraphNodeStack {
 	/**
 	 * @brief The node itself. 
-	 * 
-	 * The node itself. 
 	 * 
 	 */
 	PVS2D_LeafGraphNode* node;
