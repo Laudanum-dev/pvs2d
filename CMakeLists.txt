@@ -5,53 +5,12 @@
 # project
 cmake_minimum_required(VERSION 3.15.0)
 cmake_policy(SET CMP0091 NEW)
-project(demo LANGUAGES C CXX)
-
-# target
-add_executable(demo "")
-set_target_properties(demo PROPERTIES OUTPUT_NAME "demo")
-set_target_properties(demo PROPERTIES RUNTIME_OUTPUT_DIRECTORY "c:/Prog/_repo/pvs2d/libpvs2d/build/windows/x64/release")
-add_dependencies(demo pvs2d)
-target_include_directories(demo PRIVATE
-    include
-)
-target_include_directories(demo PRIVATE
-    C:/Users/id763/AppData/Local/.xmake/packages/r/raylib/4.0.0/4fc0fd88d8404377adc9c6be05adf73e/include
-)
-target_compile_options(demo PRIVATE
-    $<$<COMPILE_LANGUAGE:C>:-DNDEBUG>
-    $<$<COMPILE_LANGUAGE:CXX>:-DNDEBUG>
-)
-if(MSVC)
-    target_compile_options(demo PRIVATE $<$<CONFIG:Release>:-Ox -fp:fast>)
-else()
-    target_compile_options(demo PRIVATE -O3)
-endif()
-if(MSVC)
-    set_property(TARGET demo PROPERTY
-        MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
-endif()
-target_link_libraries(demo PRIVATE
-    raylib
-    opengl32
-    pvs2d
-    gdi32
-    user32
-    winmm
-    shell32
-)
-target_link_directories(demo PRIVATE
-    C:/Users/id763/AppData/Local/.xmake/packages/r/raylib/4.0.0/4fc0fd88d8404377adc9c6be05adf73e/lib
-    c:/Prog/_repo/pvs2d/libpvs2d/build/windows/x64/release
-)
-target_sources(demo PRIVATE
-    src/demo.c
-)
+project(pvs2d LANGUAGES C CXX)
 
 # target
 add_library(pvs2d STATIC "")
 set_target_properties(pvs2d PROPERTIES OUTPUT_NAME "pvs2d")
-set_target_properties(pvs2d PROPERTIES ARCHIVE_OUTPUT_DIRECTORY "c:/Prog/_repo/pvs2d/libpvs2d/build/windows/x64/release")
+set_target_properties(pvs2d PROPERTIES ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/build/windows/x64/release")
 target_include_directories(pvs2d PRIVATE
     include
 )
@@ -73,5 +32,6 @@ if(MSVC)
 endif()
 target_sources(pvs2d PRIVATE
     src/pvs2d.c
+    include/pvs2d.h
 )
 
