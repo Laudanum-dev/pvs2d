@@ -66,14 +66,15 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 <div class="textblock"><h1><a class="anchor" id="welcome"></a>
-Welcome</h1>
-<p >Welcome to the official PVS2D documentation. Here you will find a detailed view of all the PVS2D structures and functions. <br  />
- <a href="pvs2d_8h.html">The main documentation page</a></p>
+Добро пожаловать.</h1>
+<p >Добро пожаловать на официальную страницу документации PVS2D. Здесь вы найдете детальное описание всех структур и функций библиотеки.<br  />
+ <a href="pvs2d_8h.html">Основная страница документации</a></p>
 <h1><a class="anchor" id="example"></a>
-Short example</h1>
-<p >Here is a short example of how this library can be used:</p>
+Пример</h1>
+<p >Короткий пример использования программы</p>
 <div class="fragment"><div class="line"><span class="preprocessor">#include &lt;<a class="code" href="pvs2d_8h.html">PVS2D.h</a>&gt;</span></div>
 <div class="line"> </div>
+<div class="line"><span class="comment">// вертикальные стены в сцене</span></div>
 <div class="line"><span class="keywordtype">int</span> level[] = {</div>
 <div class="line">    0, 0, 0, 2, 1,</div>
 <div class="line">    0, 2, 1, 2, 1,</div>
@@ -84,45 +85,46 @@ Short example</h1>
 <div class="line">};</div>
 <div class="line"> </div>
 <div class="line"><span class="keywordtype">int</span> main() {</div>
-<div class="line">    <span class="comment">// initialize the BSP Tree</span></div>
+<div class="line">    <span class="comment">// создание BSP дерева</span></div>
 <div class="line">    <span class="keywordtype">int</span> segsC = <span class="keyword">sizeof</span>(level) / <span class="keyword">sizeof</span>(level[0]) / 5;</div>
 <div class="line">    <a class="code hl_struct" href="struct_p_v_s2_d___b_s_p_tree_node.html">PVS2D_BSPTreeNode</a> root;</div>
 <div class="line">    <a class="code hl_function" href="pvs2d_8h.html#a4f91e3d434f030837991ec00471d7a7c">PVS2D_BuildBSPTree</a>(level, segsC, &amp;root);</div>
 <div class="line"> </div>
-<div class="line">    <span class="comment">// build the portal data</span></div>
+<div class="line">    <span class="comment">// построение порталов</span></div>
 <div class="line">    <a class="code hl_function" href="pvs2d_8h.html#a4fa5fa3b1afca50757ebbcf28ceab30f">PVS2D_BuildPortals</a>(&amp;root);</div>
 <div class="line"> </div>
-<div class="line">    <span class="comment">// build the leaf graph</span></div>
+<div class="line">    <span class="comment">// построение графа листьев</span></div>
 <div class="line">    <span class="keywordtype">unsigned</span> <span class="keywordtype">int</span> nodesC = 0;</div>
 <div class="line">    <a class="code hl_struct" href="struct_p_v_s2_d___leaf_graph_node.html">PVS2D_LeafGraphNode</a>* graph = <a class="code hl_function" href="pvs2d_8h.html#a40666cdc4238a41c24098a521ad62dd2">PVS2D_BuildLeafGraph</a>(&amp;root, &amp;nodesC);</div>
 <div class="line"> </div>
 <div class="line">    <span class="comment">// ...</span></div>
-<div class="line">    <span class="comment">// for each entity mark it in the list of entities inside the leaf</span></div>
+<div class="line">    <span class="comment">// для каждой сущности в сцене - указать в какой листе она находится</span></div>
 <div class="line">    <span class="comment">// ...</span></div>
-<div class="line"> </div>
+<div class="line">    </div>
+<div class="line">    <span class="comment">// предподсчет PVS во время компиляции сцены</span></div>
 <div class="line">    <span class="keywordflow">for</span> (<span class="keywordtype">unsigned</span> <span class="keywordtype">int</span> leafIdx = 0; leafIdx &lt; nodesC; leafIdx++) {</div>
-<div class="line">        <span class="comment">// get the PVS of the leaf...</span></div>
+<div class="line">        <span class="comment">// вычислить PVS листа</span></div>
 <div class="line">        <span class="keywordtype">char</span>* pvs = <a class="code hl_function" href="pvs2d_8h.html#a98003527848f9e9964332fb21e30f968">PVS2D_GetLeafPVS</a>(graph + leafIdx, nodesC);</div>
 <div class="line"> </div>
 <div class="line">        <span class="comment">// ...</span></div>
-<div class="line">        <span class="comment">// save the pvs into the local storage</span></div>
+<div class="line">        <span class="comment">// сохранить PVS на диск</span></div>
 <div class="line">        <span class="comment">// ...</span></div>
 <div class="line"> </div>
 <div class="line">        free(pvs);</div>
 <div class="line">    }</div>
 <div class="line"> </div>
-<div class="line">    <span class="comment">// ... during main loop</span></div>
+<div class="line">    <span class="comment">// ... во время игры</span></div>
 <div class="line">    <span class="keywordtype">unsigned</span> <span class="keywordtype">int</span> curLeaf = <a class="code hl_function" href="pvs2d_8h.html#a2c33af0c4350f04a79fb430bdd11d0de">PVS2D_FindLeafOfPoint</a>(&amp;root, cameraX, cameraY);</div>
-<div class="line">    <span class="comment">// for each leaf in our PVS ... draw entities inside the leaf. </span></div>
+<div class="line">    <span class="comment">// для каждого листа в PVS текущего листа - нарисовать сущности в листе</span></div>
 <div class="line">}</div>
 <div class="ttc" id="apvs2d_8h_html"><div class="ttname"><a href="pvs2d_8h.html">pvs2d.h</a></div><div class="ttdoc">Potentially Visible Sets calculating library.</div></div>
-<div class="ttc" id="apvs2d_8h_html_a2c33af0c4350f04a79fb430bdd11d0de"><div class="ttname"><a href="pvs2d_8h.html#a2c33af0c4350f04a79fb430bdd11d0de">PVS2D_FindLeafOfPoint</a></div><div class="ttdeci">unsigned int PVS2D_FindLeafOfPoint(PVS2D_BSPTreeNode *root, double x, double y)</div><div class="ttdoc">Finds the leaf index the given point is inside of.</div></div>
-<div class="ttc" id="apvs2d_8h_html_a40666cdc4238a41c24098a521ad62dd2"><div class="ttname"><a href="pvs2d_8h.html#a40666cdc4238a41c24098a521ad62dd2">PVS2D_BuildLeafGraph</a></div><div class="ttdeci">PVS2D_LeafGraphNode * PVS2D_BuildLeafGraph(PVS2D_BSPTreeNode *root, unsigned int *nodesCDest)</div><div class="ttdoc">Builds leaf graph using tree's portal data.</div></div>
-<div class="ttc" id="apvs2d_8h_html_a4f91e3d434f030837991ec00471d7a7c"><div class="ttname"><a href="pvs2d_8h.html#a4f91e3d434f030837991ec00471d7a7c">PVS2D_BuildBSPTree</a></div><div class="ttdeci">int PVS2D_BuildBSPTree(int *segs, unsigned int segsC, PVS2D_BSPTreeNode *rootDest)</div><div class="ttdoc">Builds Binary Space Partitioning Tree from given array of segments.</div></div>
-<div class="ttc" id="apvs2d_8h_html_a4fa5fa3b1afca50757ebbcf28ceab30f"><div class="ttname"><a href="pvs2d_8h.html#a4fa5fa3b1afca50757ebbcf28ceab30f">PVS2D_BuildPortals</a></div><div class="ttdeci">int PVS2D_BuildPortals(PVS2D_BSPTreeNode *root)</div><div class="ttdoc">Builds portals data inside the Binary Space Partitioning tree.</div></div>
-<div class="ttc" id="apvs2d_8h_html_a98003527848f9e9964332fb21e30f968"><div class="ttname"><a href="pvs2d_8h.html#a98003527848f9e9964332fb21e30f968">PVS2D_GetLeafPVS</a></div><div class="ttdeci">char * PVS2D_GetLeafPVS(PVS2D_LeafGraphNode *node, unsigned int leafC)</div><div class="ttdoc">Build the Potentially Visible Set of the given leaf.</div></div>
-<div class="ttc" id="astruct_p_v_s2_d___b_s_p_tree_node_html"><div class="ttname"><a href="struct_p_v_s2_d___b_s_p_tree_node.html">PVS2D_BSPTreeNode</a></div><div class="ttdoc">Binary Space Partioning tree node.</div><div class="ttdef"><b>Definition:</b> pvs2d.h:130</div></div>
-<div class="ttc" id="astruct_p_v_s2_d___leaf_graph_node_html"><div class="ttname"><a href="struct_p_v_s2_d___leaf_graph_node.html">PVS2D_LeafGraphNode</a></div><div class="ttdoc">Node in graph of leaf adjacency.</div><div class="ttdef"><b>Definition:</b> pvs2d.h:296</div></div>
+<div class="ttc" id="apvs2d_8h_html_a2c33af0c4350f04a79fb430bdd11d0de"><div class="ttname"><a href="pvs2d_8h.html#a2c33af0c4350f04a79fb430bdd11d0de">PVS2D_FindLeafOfPoint</a></div><div class="ttdeci">unsigned int PVS2D_FindLeafOfPoint(PVS2D_BSPTreeNode *root, double x, double y)</div><div class="ttdoc">Находит индекс листа, в котором находится данная точка.</div></div>
+<div class="ttc" id="apvs2d_8h_html_a40666cdc4238a41c24098a521ad62dd2"><div class="ttname"><a href="pvs2d_8h.html#a40666cdc4238a41c24098a521ad62dd2">PVS2D_BuildLeafGraph</a></div><div class="ttdeci">PVS2D_LeafGraphNode * PVS2D_BuildLeafGraph(PVS2D_BSPTreeNode *root, unsigned int *nodesCDest)</div><div class="ttdoc">Строит граф смежности листов.</div></div>
+<div class="ttc" id="apvs2d_8h_html_a4f91e3d434f030837991ec00471d7a7c"><div class="ttname"><a href="pvs2d_8h.html#a4f91e3d434f030837991ec00471d7a7c">PVS2D_BuildBSPTree</a></div><div class="ttdeci">int PVS2D_BuildBSPTree(int *segs, unsigned int segsC, PVS2D_BSPTreeNode *rootDest)</div><div class="ttdoc">Строит дерево Двоичного Разделения пространства.</div></div>
+<div class="ttc" id="apvs2d_8h_html_a4fa5fa3b1afca50757ebbcf28ceab30f"><div class="ttname"><a href="pvs2d_8h.html#a4fa5fa3b1afca50757ebbcf28ceab30f">PVS2D_BuildPortals</a></div><div class="ttdeci">int PVS2D_BuildPortals(PVS2D_BSPTreeNode *root)</div><div class="ttdoc">Строит порталы в BSP-дереве.</div></div>
+<div class="ttc" id="apvs2d_8h_html_a98003527848f9e9964332fb21e30f968"><div class="ttname"><a href="pvs2d_8h.html#a98003527848f9e9964332fb21e30f968">PVS2D_GetLeafPVS</a></div><div class="ttdeci">char * PVS2D_GetLeafPVS(PVS2D_LeafGraphNode *node, unsigned int leafC)</div><div class="ttdoc">Вычисляет Потенциально Видимое множество (PVS) листа.</div></div>
+<div class="ttc" id="astruct_p_v_s2_d___b_s_p_tree_node_html"><div class="ttname"><a href="struct_p_v_s2_d___b_s_p_tree_node.html">PVS2D_BSPTreeNode</a></div><div class="ttdoc">Вершина дерева Двоичного Разделения пространства.</div><div class="ttdef"><b>Definition:</b> pvs2d.h:126</div></div>
+<div class="ttc" id="astruct_p_v_s2_d___leaf_graph_node_html"><div class="ttname"><a href="struct_p_v_s2_d___leaf_graph_node.html">PVS2D_LeafGraphNode</a></div><div class="ttdoc">Вершина в графе смежности листов.</div><div class="ttdef"><b>Definition:</b> pvs2d.h:283</div></div>
 </div><!-- fragment --> </div></div><!-- PageDoc -->
 </div><!-- contents -->
 <!-- start footer part -->

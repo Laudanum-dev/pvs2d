@@ -68,7 +68,7 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
-<p>2D Segment lying on a specific line.  
+<p>Отрезок, лежащий на прямой.  
  <a href="struct_p_v_s2_d___seg.html#details">More...</a></p>
 
 <p><code>#include &lt;<a class="el" href="pvs2d_8h_source.html">pvs2d.h</a>&gt;</code></p>
@@ -76,21 +76,21 @@ $(function() {
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Data Fields</h2></td></tr>
 <tr class="memitem:a8c62da5f79daf684a8c12690dbc9e86f"><td class="memItemLeft" align="right" valign="top">struct <a class="el" href="struct_p_v_s2_d___line.html">PVS2D_Line</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_p_v_s2_d___seg.html#a8c62da5f79daf684a8c12690dbc9e86f">line</a></td></tr>
-<tr class="memdesc:a8c62da5f79daf684a8c12690dbc9e86f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Base line.  <a href="struct_p_v_s2_d___seg.html#a8c62da5f79daf684a8c12690dbc9e86f">More...</a><br /></td></tr>
+<tr class="memdesc:a8c62da5f79daf684a8c12690dbc9e86f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Прямая.  <a href="struct_p_v_s2_d___seg.html#a8c62da5f79daf684a8c12690dbc9e86f">More...</a><br /></td></tr>
 <tr class="separator:a8c62da5f79daf684a8c12690dbc9e86f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aad02969f405714e94c028b838b3651e1"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_p_v_s2_d___seg.html#aad02969f405714e94c028b838b3651e1">tStart</a></td></tr>
-<tr class="memdesc:aad02969f405714e94c028b838b3651e1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Start and End parameters of the segment.  <a href="struct_p_v_s2_d___seg.html#aad02969f405714e94c028b838b3651e1">More...</a><br /></td></tr>
+<tr class="memdesc:aad02969f405714e94c028b838b3651e1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Параметры точек концов отрезка.  <a href="struct_p_v_s2_d___seg.html#aad02969f405714e94c028b838b3651e1">More...</a><br /></td></tr>
 <tr class="separator:aad02969f405714e94c028b838b3651e1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5579dd4923f5053437f0ca6b272429a0"><td class="memItemLeft" align="right" valign="top"><a id="a5579dd4923f5053437f0ca6b272429a0" name="a5579dd4923f5053437f0ca6b272429a0"></a>
 double&#160;</td><td class="memItemRight" valign="bottom"><b>tEnd</b></td></tr>
 <tr class="separator:a5579dd4923f5053437f0ca6b272429a0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7ec1f8e9bb965fce8e098a6015af0524"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_p_v_s2_d___seg.html#a7ec1f8e9bb965fce8e098a6015af0524">opq</a></td></tr>
-<tr class="memdesc:a7ec1f8e9bb965fce8e098a6015af0524"><td class="mdescLeft">&#160;</td><td class="mdescRight">Opaqueness flag.  <a href="struct_p_v_s2_d___seg.html#a7ec1f8e9bb965fce8e098a6015af0524">More...</a><br /></td></tr>
+<tr class="memdesc:a7ec1f8e9bb965fce8e098a6015af0524"><td class="mdescLeft">&#160;</td><td class="mdescRight">Флаг прозрачности.  <a href="struct_p_v_s2_d___seg.html#a7ec1f8e9bb965fce8e098a6015af0524">More...</a><br /></td></tr>
 <tr class="separator:a7ec1f8e9bb965fce8e098a6015af0524"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p >2D Segment lying on a specific line. </p>
-<p >Represents a segment that lies on a specific line. The endpoints of segment are represented with tStart and tEnd variables, each of them represeting a point on parametric line, tStart for the start of the segment and tEnd for the end. The point lying on the parametric line with parameter <code>t</code> can be represented as <code>(line-&gt;bx * t + line-&gt;ax * (1 - t), line-&gt;by * t + line-&gt;ay * (1 - t))</code> Note that the segment is oriented the same way as the line it lies on. </p>
+<div class="textblock"><p >Отрезок, лежащий на прямой. </p>
+<p >Представляет отрезок, лежащий на определенной прямой. Конечные точки отрезка представлены переменными tStart и tEnd, каждая из которых представляет точку на параметрической прямой, tStart для начала отрезка и tEnd для конца. Точка, лежащая на параметрической прямой с параметром <code>t</code>, может быть представлен как <code>(line-&gt;bx * t + line-&gt;ax * (1 - t), line-&gt;by * t + line-&gt;ay * (1 - t))</code> Обратите внимание, что отрезок ориентирован в ту же сторону, как и прямая на которой он лежит. </p>
 </div><h2 class="groupheader">Field Documentation</h2>
 <a id="a8c62da5f79daf684a8c12690dbc9e86f" name="a8c62da5f79daf684a8c12690dbc9e86f"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a8c62da5f79daf684a8c12690dbc9e86f">&#9670;&nbsp;</a></span>line</h2>
@@ -104,8 +104,8 @@ double&#160;</td><td class="memItemRight" valign="bottom"><b>tEnd</b></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Base line. </p>
-<p >The line segment lies on. </p>
+<p>Прямая. </p>
+<p >Прямая, на которой лежит отрезок. </p>
 
 </div>
 </div>
@@ -121,8 +121,8 @@ double&#160;</td><td class="memItemRight" valign="bottom"><b>tEnd</b></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Opaqueness flag. </p>
-<p >The flag that tells whether the segment is opaque or not. This is used during visibility calculations to allow for "hinting" BSP Tree building algorithm where it should put a split. In reality, it doesn't affect almost anything. 0 for transparent value of flag, anything else for opaque. </p>
+<p>Флаг прозрачности. </p>
+<p >Флаг, определяющий, является ли отрезок прозрачным (0, если прозрачный) или непрозрачным (1, если непрозрачный). Независимо от того, прозрачен отрезок или нет, он так или иначе будет разделять пространство во время расчета дерева Двоичного Разделения пространства, однако при построении порталов непрозрачные отрезки будут перекрывать прозрачные, и на месте пустого пространства будут сгенерированы прозрачные порталы. </p>
 
 </div>
 </div>
@@ -138,8 +138,8 @@ double&#160;</td><td class="memItemRight" valign="bottom"><b>tEnd</b></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Start and End parameters of the segment. </p>
-<p >The start and end parameters of the endpoints of the segment. It must be guaranteed that tStart &lt; tEnd </p>
+<p>Параметры точек концов отрезка. </p>
+<p >Параметры точек начала и конца отрезка. Обязательно выполнение условия <code>tStart &lt; tEnd</code> </p>
 
 </div>
 </div>

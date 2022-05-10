@@ -68,26 +68,27 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
-<p>Portal between two leafs.  
+<p>Портал между двумя листами.  
  <a href="struct_p_v_s2_d___portal.html#details">More...</a></p>
 
 <p><code>#include &lt;<a class="el" href="pvs2d_8h_source.html">pvs2d.h</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Data Fields</h2></td></tr>
-<tr class="memitem:ae847affdb76aaf4247d70d959152b45f"><td class="memItemLeft" align="right" valign="top">struct <a class="el" href="struct_p_v_s2_d___seg.html">PVS2D_Seg</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_p_v_s2_d___portal.html#ae847affdb76aaf4247d70d959152b45f">seg</a></td></tr>
-<tr class="memdesc:ae847affdb76aaf4247d70d959152b45f"><td class="mdescLeft">&#160;</td><td class="mdescRight">The segment the portal is.  <a href="struct_p_v_s2_d___portal.html#ae847affdb76aaf4247d70d959152b45f">More...</a><br /></td></tr>
+<tr class="memitem:ae847affdb76aaf4247d70d959152b45f"><td class="memItemLeft" align="right" valign="top"><a id="ae847affdb76aaf4247d70d959152b45f" name="ae847affdb76aaf4247d70d959152b45f"></a>
+struct <a class="el" href="struct_p_v_s2_d___seg.html">PVS2D_Seg</a>&#160;</td><td class="memItemRight" valign="bottom"><b>seg</b></td></tr>
+<tr class="memdesc:ae847affdb76aaf4247d70d959152b45f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Отрезок, представляющий портал. <br /></td></tr>
 <tr class="separator:ae847affdb76aaf4247d70d959152b45f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:adebf38210f588732327ee95ce3b5e968"><td class="memItemLeft" align="right" valign="top">unsigned int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_p_v_s2_d___portal.html#adebf38210f588732327ee95ce3b5e968">leftLeaf</a></td></tr>
-<tr class="memdesc:adebf38210f588732327ee95ce3b5e968"><td class="mdescLeft">&#160;</td><td class="mdescRight">Leafs of portals.  <a href="struct_p_v_s2_d___portal.html#adebf38210f588732327ee95ce3b5e968">More...</a><br /></td></tr>
+<tr class="memdesc:adebf38210f588732327ee95ce3b5e968"><td class="mdescLeft">&#160;</td><td class="mdescRight">Листы портала.  <a href="struct_p_v_s2_d___portal.html#adebf38210f588732327ee95ce3b5e968">More...</a><br /></td></tr>
 <tr class="separator:adebf38210f588732327ee95ce3b5e968"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a82066626d171300e7d23100eae350920"><td class="memItemLeft" align="right" valign="top"><a id="a82066626d171300e7d23100eae350920" name="a82066626d171300e7d23100eae350920"></a>
 unsigned int&#160;</td><td class="memItemRight" valign="bottom"><b>rightLeaf</b></td></tr>
 <tr class="separator:a82066626d171300e7d23100eae350920"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p >Portal between two leafs. </p>
-<p >Represents a portal lying between two leafs. Essentially, the portal is just a wrapper of <code><a class="el" href="struct_p_v_s2_d___seg.html" title="2D Segment lying on a specific line.">PVS2D_Seg</a></code> that contains indexes of left and right leafs. It is also essential that portal touches only two leafs (if its not so, the portal must be split during portal building step). </p>
+<div class="textblock"><p >Портал между двумя листами. </p>
+<p >Представляет портал между двумя листами. По сути, портал - модификация Отрезка, которая содержит индексы правого и левого листа. Любой портал должен проходить по границе ровно двух листов - одного слева и одного справа. </p>
 </div><h2 class="groupheader">Field Documentation</h2>
 <a id="adebf38210f588732327ee95ce3b5e968" name="adebf38210f588732327ee95ce3b5e968"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#adebf38210f588732327ee95ce3b5e968">&#9670;&nbsp;</a></span>leftLeaf</h2>
@@ -101,25 +102,8 @@ unsigned int&#160;</td><td class="memItemRight" valign="bottom"><b>rightLeaf</b>
       </table>
 </div><div class="memdoc">
 
-<p>Leafs of portals. </p>
-<p >Leafs that touch the portal from the left and from the right accordingly. </p>
-
-</div>
-</div>
-<a id="ae847affdb76aaf4247d70d959152b45f" name="ae847affdb76aaf4247d70d959152b45f"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ae847affdb76aaf4247d70d959152b45f">&#9670;&nbsp;</a></span>seg</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">struct <a class="el" href="struct_p_v_s2_d___seg.html">PVS2D_Seg</a> seg</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>The segment the portal is. </p>
-<p >A segment that represents the portal's position. </p>
+<p>Листы портала. </p>
+<p >Индексы левого и правого листов, по границам которых проходит портал. </p>
 
 </div>
 </div>

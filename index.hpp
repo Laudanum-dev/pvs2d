@@ -1,17 +1,18 @@
 ////////////////////////////////////////////////////////////
 /// \mainpage
 ///
-/// \section welcome Welcome
-/// Welcome to the official PVS2D documentation. Here you will find a detailed view of all
-/// the PVS2D structures and functions. <br/>
-/// <a href="pvs2d_8h.html">The main documentation page</a>
+/// \section welcome Добро пожаловать.
+/// Добро пожаловать на официальную страницу документации PVS2D. 
+/// Здесь вы найдете детальное описание всех структур и функций библиотеки.<br/>
+/// <a href="pvs2d_8h.html">Основная страница документации</a>
 ///	
-/// \section example Short example
-/// Here is a short example of how this library can be used:
+/// \section example Пример
+/// Короткий пример использования программы
 ///
 /// \code
 /// #include <PVS2D.h>
 /// 
+/// // вертикальные стены в сцене
 /// int level[] = {
 /// 	0, 0, 0, 2, 1,
 /// 	0, 2, 1, 2, 1,
@@ -22,36 +23,37 @@
 /// };
 /// 
 /// int main() {
-/// 	// initialize the BSP Tree
+/// 	// создание BSP дерева
 /// 	int segsC = sizeof(level) / sizeof(level[0]) / 5;
 /// 	PVS2D_BSPTreeNode root;
 /// 	PVS2D_BuildBSPTree(level, segsC, &root);
 /// 
-/// 	// build the portal data
+/// 	// построение порталов
 /// 	PVS2D_BuildPortals(&root);
 /// 
-/// 	// build the leaf graph
+/// 	// построение графа листьев
 /// 	unsigned int nodesC = 0;
 /// 	PVS2D_LeafGraphNode* graph = PVS2D_BuildLeafGraph(&root, &nodesC);
 /// 
 /// 	// ...
-/// 	// for each entity mark it in the list of entities inside the leaf
+/// 	// для каждой сущности в сцене - указать в какой листе она находится
 /// 	// ...
-/// 
+///     
+///     // предподсчет PVS во время компиляции сцены
 /// 	for (unsigned int leafIdx = 0; leafIdx < nodesC; leafIdx++) {
-/// 		// get the PVS of the leaf...
+/// 		// вычислить PVS листа
 /// 		char* pvs = PVS2D_GetLeafPVS(graph + leafIdx, nodesC);
 /// 
 /// 		// ...
-/// 		// save the pvs into the local storage
+/// 		// сохранить PVS на диск
 /// 		// ...
 /// 
 /// 		free(pvs);
 /// 	}
 /// 
-/// 	// ... during main loop
+/// 	// ... во время игры
 /// 	unsigned int curLeaf = PVS2D_FindLeafOfPoint(&root, cameraX, cameraY);
-/// 	// for each leaf in our PVS ... draw entities inside the leaf. 
+/// 	// для каждого листа в PVS текущего листа - нарисовать сущности в листе
 /// }
 /// \endcode
 ////////////////////////////////////////////////////////////

@@ -68,26 +68,28 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
-<p>Stack of portals.  
+<p>Стэк порталов.  
  <a href="struct_p_v_s2_d___portal_stack.html#details">More...</a></p>
 
 <p><code>#include &lt;<a class="el" href="pvs2d_8h_source.html">pvs2d.h</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Data Fields</h2></td></tr>
-<tr class="memitem:aca0bc2138fcaef02a9ab1e3dcc6b6700"><td class="memItemLeft" align="right" valign="top">struct <a class="el" href="struct_p_v_s2_d___portal.html">PVS2D_Portal</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_p_v_s2_d___portal_stack.html#aca0bc2138fcaef02a9ab1e3dcc6b6700">portal</a></td></tr>
-<tr class="memdesc:aca0bc2138fcaef02a9ab1e3dcc6b6700"><td class="mdescLeft">&#160;</td><td class="mdescRight">Portal itself.  <a href="struct_p_v_s2_d___portal_stack.html#aca0bc2138fcaef02a9ab1e3dcc6b6700">More...</a><br /></td></tr>
+<tr class="memitem:aca0bc2138fcaef02a9ab1e3dcc6b6700"><td class="memItemLeft" align="right" valign="top"><a id="aca0bc2138fcaef02a9ab1e3dcc6b6700" name="aca0bc2138fcaef02a9ab1e3dcc6b6700"></a>
+struct <a class="el" href="struct_p_v_s2_d___portal.html">PVS2D_Portal</a> *&#160;</td><td class="memItemRight" valign="bottom"><b>portal</b></td></tr>
+<tr class="memdesc:aca0bc2138fcaef02a9ab1e3dcc6b6700"><td class="mdescLeft">&#160;</td><td class="mdescRight">Портал. <br /></td></tr>
 <tr class="separator:aca0bc2138fcaef02a9ab1e3dcc6b6700"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:acb865634911ce389c9afb3bb9754e2a6"><td class="memItemLeft" align="right" valign="top">struct <a class="el" href="struct_p_v_s2_d___portal_stack.html">PVS2D_PortalStack</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_p_v_s2_d___portal_stack.html#acb865634911ce389c9afb3bb9754e2a6">next</a></td></tr>
-<tr class="memdesc:acb865634911ce389c9afb3bb9754e2a6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Pointer to the next node.  <a href="struct_p_v_s2_d___portal_stack.html#acb865634911ce389c9afb3bb9754e2a6">More...</a><br /></td></tr>
+<tr class="memitem:acb865634911ce389c9afb3bb9754e2a6"><td class="memItemLeft" align="right" valign="top"><a id="acb865634911ce389c9afb3bb9754e2a6" name="acb865634911ce389c9afb3bb9754e2a6"></a>
+struct <a class="el" href="struct_p_v_s2_d___portal_stack.html">PVS2D_PortalStack</a> *&#160;</td><td class="memItemRight" valign="bottom"><b>next</b></td></tr>
+<tr class="memdesc:acb865634911ce389c9afb3bb9754e2a6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Указатель на следующий элемент <br /></td></tr>
 <tr class="separator:acb865634911ce389c9afb3bb9754e2a6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad8f5e19e19f12974c9713e920ec54331"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_p_v_s2_d___portal_stack.html#ad8f5e19e19f12974c9713e920ec54331">left</a></td></tr>
-<tr class="memdesc:ad8f5e19e19f12974c9713e920ec54331"><td class="mdescLeft">&#160;</td><td class="mdescRight">Flag of relative position of the portal.  <a href="struct_p_v_s2_d___portal_stack.html#ad8f5e19e19f12974c9713e920ec54331">More...</a><br /></td></tr>
+<tr class="memdesc:ad8f5e19e19f12974c9713e920ec54331"><td class="mdescLeft">&#160;</td><td class="mdescRight">Флаг относительной позиции портала.  <a href="struct_p_v_s2_d___portal_stack.html#ad8f5e19e19f12974c9713e920ec54331">More...</a><br /></td></tr>
 <tr class="separator:ad8f5e19e19f12974c9713e920ec54331"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p >Stack of portals. </p>
-<p >Represents a linked list of portals (instances of <code><a class="el" href="struct_p_v_s2_d___portal.html" title="Portal between two leafs.">PVS2D_Portal</a></code>). Also each linked list node provide information, whether the portal it contains is, in context, to the left or to the right. </p>
+<div class="textblock"><p >Стэк порталов. </p>
+<p >Представляет собой связный список, содержащий порталы. Также каждый элемент предоставляет информацию, является ли в данном контексте портал левым или правым. </p>
 </div><h2 class="groupheader">Field Documentation</h2>
 <a id="ad8f5e19e19f12974c9713e920ec54331" name="ad8f5e19e19f12974c9713e920ec54331"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ad8f5e19e19f12974c9713e920ec54331">&#9670;&nbsp;</a></span>left</h2>
@@ -101,42 +103,8 @@ Data Fields</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Flag of relative position of the portal. </p>
-<p >A flag that is used during the portal building, used to indicate whether the current subspace we are in is to the left of the portal (1 if so) or to the right (0 if so) </p>
-
-</div>
-</div>
-<a id="acb865634911ce389c9afb3bb9754e2a6" name="acb865634911ce389c9afb3bb9754e2a6"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#acb865634911ce389c9afb3bb9754e2a6">&#9670;&nbsp;</a></span>next</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">struct <a class="el" href="struct_p_v_s2_d___portal_stack.html">PVS2D_PortalStack</a>* next</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Pointer to the next node. </p>
-<p >A pointer to the next node of linked list. </p>
-
-</div>
-</div>
-<a id="aca0bc2138fcaef02a9ab1e3dcc6b6700" name="aca0bc2138fcaef02a9ab1e3dcc6b6700"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aca0bc2138fcaef02a9ab1e3dcc6b6700">&#9670;&nbsp;</a></span>portal</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">struct <a class="el" href="struct_p_v_s2_d___portal.html">PVS2D_Portal</a>* portal</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Portal itself. </p>
-<p >A Portal itself. </p>
+<p>Флаг относительной позиции портала. </p>
+<p >Флаг, используемый во время построения порталов, используется чтобы указать, находится ли подпространство текущей вершины BSP-дерева слева от отрезка (1, если так), или справа (0, если так) </p>
 
 </div>
 </div>

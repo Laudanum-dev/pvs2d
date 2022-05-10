@@ -68,61 +68,29 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
-<p>Stack of leaf's adjacent leafs.  
+<p>Стэк ребер вершины графа листов.  
  <a href="struct_p_v_s2_d___leaf_graph_edge_stack.html#details">More...</a></p>
 
 <p><code>#include &lt;<a class="el" href="pvs2d_8h_source.html">pvs2d.h</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Data Fields</h2></td></tr>
-<tr class="memitem:a0be2bb9e184516bd23c90bf6e7c9dc76"><td class="memItemLeft" align="right" valign="top">struct <a class="el" href="struct_p_v_s2_d___leaf_graph_node.html">PVS2D_LeafGraphNode</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_p_v_s2_d___leaf_graph_edge_stack.html#a0be2bb9e184516bd23c90bf6e7c9dc76">node</a></td></tr>
-<tr class="memdesc:a0be2bb9e184516bd23c90bf6e7c9dc76"><td class="mdescLeft">&#160;</td><td class="mdescRight">The node of the graph.  <a href="struct_p_v_s2_d___leaf_graph_edge_stack.html#a0be2bb9e184516bd23c90bf6e7c9dc76">More...</a><br /></td></tr>
+<tr class="memitem:a0be2bb9e184516bd23c90bf6e7c9dc76"><td class="memItemLeft" align="right" valign="top"><a id="a0be2bb9e184516bd23c90bf6e7c9dc76" name="a0be2bb9e184516bd23c90bf6e7c9dc76"></a>
+struct <a class="el" href="struct_p_v_s2_d___leaf_graph_node.html">PVS2D_LeafGraphNode</a> *&#160;</td><td class="memItemRight" valign="bottom"><b>node</b></td></tr>
+<tr class="memdesc:a0be2bb9e184516bd23c90bf6e7c9dc76"><td class="mdescLeft">&#160;</td><td class="mdescRight">Вершина, из которой исходит ребро <br /></td></tr>
 <tr class="separator:a0be2bb9e184516bd23c90bf6e7c9dc76"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae6f36996483b9793f2ae747b7977c2e1"><td class="memItemLeft" align="right" valign="top">struct <a class="el" href="struct_p_v_s2_d___leaf_graph_edge_stack.html">PVS2D_LeafGraphEdgeStack</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_p_v_s2_d___leaf_graph_edge_stack.html#ae6f36996483b9793f2ae747b7977c2e1">next</a></td></tr>
-<tr class="memdesc:ae6f36996483b9793f2ae747b7977c2e1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Pointer to the next edge.  <a href="struct_p_v_s2_d___leaf_graph_edge_stack.html#ae6f36996483b9793f2ae747b7977c2e1">More...</a><br /></td></tr>
+<tr class="memitem:ae6f36996483b9793f2ae747b7977c2e1"><td class="memItemLeft" align="right" valign="top"><a id="ae6f36996483b9793f2ae747b7977c2e1" name="ae6f36996483b9793f2ae747b7977c2e1"></a>
+struct <a class="el" href="struct_p_v_s2_d___leaf_graph_edge_stack.html">PVS2D_LeafGraphEdgeStack</a> *&#160;</td><td class="memItemRight" valign="bottom"><b>next</b></td></tr>
+<tr class="memdesc:ae6f36996483b9793f2ae747b7977c2e1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Указатель на следующий элемент стэка <br /></td></tr>
 <tr class="separator:ae6f36996483b9793f2ae747b7977c2e1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae7a4e4b1595b1cdb4b1500edb86cc567"><td class="memItemLeft" align="right" valign="top">struct <a class="el" href="struct_p_v_s2_d___portal.html">PVS2D_Portal</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_p_v_s2_d___leaf_graph_edge_stack.html#ae7a4e4b1595b1cdb4b1500edb86cc567">prt</a></td></tr>
-<tr class="memdesc:ae7a4e4b1595b1cdb4b1500edb86cc567"><td class="mdescLeft">&#160;</td><td class="mdescRight">Portal that represents the edge.  <a href="struct_p_v_s2_d___leaf_graph_edge_stack.html#ae7a4e4b1595b1cdb4b1500edb86cc567">More...</a><br /></td></tr>
+<tr class="memdesc:ae7a4e4b1595b1cdb4b1500edb86cc567"><td class="mdescLeft">&#160;</td><td class="mdescRight">Портал, представляющийся ребром.  <a href="struct_p_v_s2_d___leaf_graph_edge_stack.html#ae7a4e4b1595b1cdb4b1500edb86cc567">More...</a><br /></td></tr>
 <tr class="separator:ae7a4e4b1595b1cdb4b1500edb86cc567"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p >Stack of leaf's adjacent leafs. </p>
-<p >Represents a linked list of the leaf's adjacent leafs. Those adjacency relations are represented as the graph, and this structure represents the edge of this graph, as if the graph was represented as an adjacency list. Simply put that this is like a list of all nodes adjacent to the <code>node</code>. Also note, that since all of connections between portals go through portals, each edge is represented by some portal. </p>
+<div class="textblock"><p >Стэк ребер вершины графа листов. </p>
+<p >Представляет стэк (связный список) ребер вершины графа листов, т.е. является списком связности (не путать со связным списком) вершины графа. Поскольку все соединения между листами идут через порталы, каждое ребро в графе представлено каким-то порталом. </p>
 </div><h2 class="groupheader">Field Documentation</h2>
-<a id="ae6f36996483b9793f2ae747b7977c2e1" name="ae6f36996483b9793f2ae747b7977c2e1"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ae6f36996483b9793f2ae747b7977c2e1">&#9670;&nbsp;</a></span>next</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">struct <a class="el" href="struct_p_v_s2_d___leaf_graph_edge_stack.html">PVS2D_LeafGraphEdgeStack</a>* next</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Pointer to the next edge. </p>
-<p >A pointer to the next node in the linked list. </p>
-
-</div>
-</div>
-<a id="a0be2bb9e184516bd23c90bf6e7c9dc76" name="a0be2bb9e184516bd23c90bf6e7c9dc76"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a0be2bb9e184516bd23c90bf6e7c9dc76">&#9670;&nbsp;</a></span>node</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">struct <a class="el" href="struct_p_v_s2_d___leaf_graph_node.html">PVS2D_LeafGraphNode</a>* node</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>The node of the graph. </p>
-<p >The node of the graph, from where this edge goes. On the other side of the portal there is the edge that goes back into the <code>node</code>. </p>
-
-</div>
-</div>
 <a id="ae7a4e4b1595b1cdb4b1500edb86cc567" name="ae7a4e4b1595b1cdb4b1500edb86cc567"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ae7a4e4b1595b1cdb4b1500edb86cc567">&#9670;&nbsp;</a></span>prt</h2>
 
@@ -135,8 +103,8 @@ Data Fields</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Portal that represents the edge. </p>
-<p >Since each edge between graph is going between two adjacent leafs, each edge can be represented as the portal that connects those two leafs, which <code>prt</code> actually is. </p>
+<p>Портал, представляющийся ребром. </p>
+<p >Посколько все ребра в графе проходят между двумя примыкающими друг к другу листами, каждое ребро может быть представлено порталом, проходящим по границе между этими листами, которым и является <code>prt</code> </p>
 
 </div>
 </div>

@@ -5,7 +5,7 @@
  * @version 0.0.1
  * @date 2022-05-09
  * 
- * Potentially Visible Sets calculating library.
+ * Библиотека вычисления Потенциально-Видимых Множеств.  
  * 
  * @copyright Copyright (c) 2022
  * 
@@ -19,329 +19,311 @@
 // --------------------------------------------------------
 
 /**
- * @brief 2D Line between two points. 
+ * @brief Прямая на плоскости между двумя точками. 
  * 
- * Represents a line that goes through two points. Points are required to be integer.
- * The architecture implies that there will be many segments lying on this line,
- * all of which are stored in `mems` stack.
- * Also note that line is "oriented" from Point A(ax, ay) to point B(bx, by).
- * The orientation doesn't have any impact on performance, but might 
- * slightly modify the resulting structures.
+ * Представляет прямую на плоскости, проходящую через две точки. 
+ * Точки должны иметь целочисленные координаты. 
+ * Архитектура подразумевает, что на этой прямой будет лежать несколько отрезков,
+ * все они хранятся в стеке `mems`.
+ * Также обратите внимание, что прямая «ориентирована» от точки A (ax, ay) до точки B (bx, by).
+ * Ориентация не влияет на производительность, но может
+ * немного видоизменить получившиеся структуры.
  * 
  */
 typedef struct PVS2D_Line {
 	/**
-	 * @brief Points the line bases on. 
+	 * @brief Точки на которых лежит прямая. 
 	 * 
-	 * Four coordinates of two points the line bases on.
+	 * Четыре координаты двух точек, на которых лежит прямая. 
 	 * 
 	 */
 	int ax, ay, bx, by;
 
 	/**
-	 * @brief Stack of all segments that are on this line. 
+	 * @brief Стэк всех отрезков на прямой
 	 * 
-	 * Represents a stack of all segments (instances of `PVS2D_Seg` structure) 
-	 * that are based on this line.
+	 * Стэк, представленный списком связности, содержащий все отрезки, лежащие на прямой.
 	 * 
 	 */
 	struct PVS2D_SegStack* mems;
 } PVS2D_Line;
 
 /**
- * @brief 2D Segment lying on a specific line. 
+ * @brief Отрезок, лежащий на прямой. 
  * 
- * Represents a segment that lies on a specific line. The endpoints of segment
- * are represented with tStart and tEnd variables, each of them represeting
- * a point on parametric line, tStart for the start of the segment and tEnd 
- * for the end. The point lying on the parametric line with parameter `t` can be 
- * represented as 
+ * Представляет отрезок, лежащий на определенной прямой. Конечные точки отрезка
+ * представлены переменными tStart и tEnd, каждая из которых представляет
+ * точку на параметрической прямой, tStart для начала отрезка и tEnd
+ * для конца. Точка, лежащая на параметрической прямой с параметром `t`, может быть
+ * представлен как
  * `(line->bx * t + line->ax * (1 - t), line->by * t + line->ay * (1 - t))`
- * Note that the segment is oriented the same way as the line 
- * it lies on.
+ * Обратите внимание, что отрезок ориентирован в ту же сторону, как и прямая на которой он лежит.
  * 
  */
 typedef struct PVS2D_Seg {
 	/**
-	 * @brief Base line. 
+	 * @brief Прямая. 
 	 * 
-	 * The line segment lies on. 
+	 * Прямая, на которой лежит отрезок. 
 	 * 
 	 */
 	struct PVS2D_Line* line;
 
 	/**
-	 * @brief Start and End parameters of the segment. 
+	 * @brief Параметры точек концов отрезка. 
 	 * 
-	 * The start and end parameters of the endpoints of the segment. It must be guaranteed 
-	 * that tStart < tEnd
+	 * Параметры точек начала и конца отрезка. Обязательно выполнение условия `tStart < tEnd`
 	 * 
 	 */
 	double tStart, tEnd;
 
 	/**
-	 * @brief Opaqueness flag. 
+	 * @brief Флаг прозрачности. 
 	 * 
-	 * The flag that tells whether the segment is opaque or not. This 
-	 * is used during visibility calculations to allow for "hinting" 
-	 * BSP Tree building algorithm where it should put a split. 
-	 * In reality, it doesn't affect almost anything. 
-	 * 0 for transparent value of flag, anything else for opaque. 
+	 * Флаг, определяющий, является ли отрезок прозрачным (0, если прозрачный) или 
+	 * непрозрачным (1, если непрозрачный). Независимо от того, прозрачен отрезок или нет, 
+	 * он так или иначе будет разделять пространство во время расчета дерева Двоичного Разделения 
+	 * пространства, однако при построении порталов непрозрачные отрезки будут перекрывать прозрачные, 
+	 * и на месте пустого пространства будут сгенерированы прозрачные порталы. 
 	 * 
 	 */
 	int opq;
 } PVS2D_Seg;
 
 /**
- * @brief Stack of segments. 
+ * @brief Стэк отрезков. 
  * 
- * Represents a linked list of segments (instances of `PVS2D_Seg` structure). 
+ * Представляет собой связный список отрезков. 
  * 
  */
 typedef struct PVS2D_SegStack {
 	/**
-	 * @brief Segment itself. 
-	 * 
-	 * A segment itself. 
+	 * @brief Отрезок. 
 	 * 
 	 */
 	struct PVS2D_Seg* seg;
 
 	/**
-	 * @brief Pointer to next node. 
+	 * @brief Указатель на следующий элемент стэка. 
 	 * 
-	 * A pointer to the next node of linked list. 
+	 * Указатель на следующий элемент списка связности. 
 	 * 
 	 */
 	struct PVS2D_SegStack* next;
 } PVS2D_SegStack;
 
 /**
- * @brief Binary Space Partioning tree node. 
+ * @brief Вершина дерева Двоичного Разделения пространства. 
  * 
- * Represents a Binary Space Partitioning tree node. It contains a line that splits the space, 
- * pointers to the left and right subtrees, and indexes of leaves that are used instead of nodes 
- * when either left or right subspace is empty. Since the splitting line also is bounded by 
- * the subspace of a node, it has its tSplitStart and tSplitEnd parameters (like if it was 
- * a segment). The structure also has a stack of all nodes that lie on the splitting line, 
- * as well as all of the portals.
+ * Представляет вершину дерева Двоичного Разделения пространства (BSP-дерева). Содержит прямую, которая 
+ * делит пространство на две части, указатели на корни левого и правого поддерева, а также 
+ * индексы листов, которые используются вместо вершин, если правое или левое подпространство 
+ * пусто. По-скольку разделительная прямая также находится в пределах подпространства текущей 
+ * вершины, она имеет начало и конец (которые могут быть бесконечно удаленными). Структура также 
+ * имеет стэк всех отрезков, которые лежат на разделительной прямой. 
  * 
  */
 typedef struct PVS2D_BSPTreeNode {
 	/**
-	 * @brief Left and right subtree pointers. 
+	 * @brief Указатели на корни левого и правого поддеревьев. 
 	 * 
-	 * Pointers to the left and right subtrees. Their subspace is located directly 
-	 * to the left or to the right of splitting line accordingly. Any of the pointers can be 
-	 * `NULL`, indicating, that it's subspace doesn't have any segments in it, 
-	 * therefore being a leaf. In this case leftLeaf or rightLeaf accordingly
-	 * should contain valid index of a leaf. 
+	 * Указатели на корни левого и правого поддеревьев. Их подпространство находится слева и справа 
+	 * от разделительной прямой соответственно. Каждый из этих указателей может быть равен NULL, 
+	 * указывая, что левое или правое подпространство не имеют отрезков строго внутри, соответственно 
+	 * являясь листом. В таком случае `leftLeaf` или `rightLeaf` соответственно должны содержать 
+	 * корректный индекс листа. 
 	 * 
 	 */
 	struct PVS2D_BSPTreeNode *left, *right;
 
 	/**
-	 * @brief Left and right leafs indexes. 
+	 * @brief Индексы левого и правого листа. 
 	 * 
-	 * For example, if this node doesn't have a left child node, 
-	 * the `leftLeaf` should contain the index of a leaf that is the left subspace.
+	 * Например, если текущая вершина не имеет левого поддерева, 
+	 * `leftLeaf` должен содержать индекс листа, который является левым подпространством. 
 	 * 
 	 */
 	unsigned int leftLeaf, rightLeaf;
 
 	/**
-	 * @brief Splitting line. 
+	 * @brief Разделительная прямая. 
 	 * 
-	 * The line that splits this node's subspace into two parts. Therefore left child's subspace 
-	 * is directly to the left of the splitting line, and right child's is to the right. Their 
-	 * subspaces are two parts of current node's subspace. 
+	 * Прямая, которая делит подпространство вершины на две части. Таким образом левое подпространство 
+	 * находится слева от разделительной прямой, и правое - справа. В данном контексте лево и право 
+	 * берутся относительно нахождения в точке А разделительной прямой, направляя взгляд на точку B. 
 	 * 
 	 */
 	struct PVS2D_Line* line;
 
 	/**
-	 * @brief Stack of segments on the splitting line. 
+	 * @brief Стэк отрезков, лежащих на разделительной прямой. 
 	 * 
-	 * The stack of all segments that lie on the splitting line. 
+	 * Стэк всех отрезков, лежащих на разделительной прямой. 
 	 * 
 	 */
 	struct PVS2D_SegStack* segs;
 	
 	/**
-	 * @brief Endpoints of the splitting line. 
+	 * @brief Параметры точек концов разделительной прямой. 
 	 * 
-	 * Parameters of the endpoints of the part of the splitting line, that lies inside the node's 
-	 * subspace. As with segments (`PVS2D_Seg`), it must be that tSplitStart < tSplitEnd, 
-	 * but unlike those, tSplitStart can be -infinity, and tSplitEnd can be +infinity.
+	 * Параметры точек концов разделительной прямой. Отрезок, заключенный между этими точками 
+	 * должен лежать полностью внутри подпространства текущей вершины. Также  
+	 * должно выполняться условие `tSplitStart` < `tSplitEnd`, однако, в отличие от тех, `tSplitStart` 
+	 * может иметь значение `-INFINITY` и `tSplitEnd` может иметь значение `INFINITY`. 
 	 * 
 	 */
 	double tSplitStart, tSplitEnd;
 
 	/**
-	 * @brief Stack of portals on the splitting line. 
+	 * @brief Стэк порталов, лежащих на разделительной прямой. 
 	 * 
-	 * Stack of portals lying on the splitting line. They must have no gaps between eachother 
-	 * and never intersect with eachother. 
+	 * Стэк порталов, лежащих на разделительной прямой. Никакие два портала не должны иметь общих точек 
+	 * помимо концов, и любые два соседних портала должны иметь общий конец (таким образов все порталы 
+	 * выстраиваются в "цепь"). 
 	 * 
 	 */
 	struct PVS2D_PortalStack* portals;
 } PVS2D_BSPTreeNode;
 
 /**
- * @brief Stack of portals. 
+ * @brief Стэк порталов. 
  * 
- * Represents a linked list of portals (instances of `PVS2D_Portal`). 
- * Also each linked list node provide information, whether the portal 
- * it contains is, in context, to the left or to the right. 
+ * Представляет собой связный список, содержащий порталы. 
+ * Также каждый элемент предоставляет информацию, является ли в данном контексте портал 
+ * левым или правым. 
  * 
  */
 typedef struct PVS2D_PortalStack {
 	/**
-	 * @brief Portal itself. 
-	 * 
-	 * A Portal itself. 
+	 * @brief Портал. 
 	 * 
 	 */
 	struct PVS2D_Portal* portal;
 
 	/**
-	 * @brief Pointer to the next node. 
-	 * 
-	 * A pointer to the next node of linked list. 
+	 * @brief Указатель на следующий элемент
 	 * 
 	 */
 	struct PVS2D_PortalStack* next;
 
 	/**
-	 * @brief Flag of relative position of the portal. 
+	 * @brief Флаг относительной позиции портала. 
 	 * 
-	 * A flag that is used during the portal building, used to indicate whether the current 
-	 * subspace we are in is to the left of the portal (1 if so) or to the right (0 if so)
+	 * Флаг, используемый во время построения порталов, используется чтобы указать, 
+	 * находится ли подпространство текущей вершины BSP-дерева слева от отрезка (1, если так), 
+	 * или справа (0, если так)
 	 * 
 	 */
 	int left;
 } PVS2D_PortalStack;
 
 /**
- * @brief Portal between two leafs. 
+ * @brief Портал между двумя листами. 
  * 
- * Represents a portal lying between two leafs. Essentially, the portal is just a wrapper of 
- * `PVS2D_Seg` that contains indexes of left and right leafs. It is also essential that portal 
- * touches only two leafs (if its not so, the portal must be split during portal building step). 
+ * Представляет портал между двумя листами. По сути, портал - модификация Отрезка, которая содержит 
+ * индексы правого и левого листа. Любой портал должен проходить по границе ровно двух листов - 
+ * одного слева и одного справа. 
  * 
  */
 typedef struct PVS2D_Portal {
 	/**
-	 * @brief The segment the portal is. 
-	 * 
-	 * A segment that represents the portal's position. 
+	 * @brief Отрезок, представляющий портал. 
 	 * 
 	 */
 	struct PVS2D_Seg seg;
 
 	/**
-	 * @brief Leafs of portals. 
+	 * @brief Листы портала. 
 	 * 
-	 * Leafs that touch the portal from the left and from the right accordingly. 
+	 * Индексы левого и правого листов, по границам которых проходит портал.
 	 * 
 	 */
 	unsigned int leftLeaf, rightLeaf;
 } PVS2D_Portal;
 
 /**
- * @brief Stack of leaf's adjacent leafs. 
+ * @brief Стэк ребер вершины графа листов. 
  * 
- * Represents a linked list of the leaf's adjacent leafs. Those adjacency relations are 
- * represented as the graph, and this structure represents the edge of this graph, 
- * as if the graph was represented as an adjacency list. Simply put that this is like a 
- * list of all nodes adjacent to the `node`. Also note, that since all of connections 
- * between portals go through portals, each edge is represented by some portal. 
+ * Представляет стэк (связный список) ребер вершины графа листов, т.е. является списком связности 
+ * (не путать со связным списком) вершины графа. Поскольку все соединения
+ * между листами идут через порталы, каждое ребро в графе представлено каким-то порталом.
  * 
  */
 typedef struct PVS2D_LeafGraphEdgeStack {
 	/**
-	 * @brief The node of the graph. 
-	 * 
-	 * The node of the graph, from where this edge goes. On the other side of the portal there is 
-	 * the edge that goes back into the `node`. 
+	 * @brief Вершина, из которой исходит ребро
 	 * 
 	 */
 	struct PVS2D_LeafGraphNode* node;
 
 	/**
-	 * @brief Pointer to the next edge. 
-	 * 
-	 * A pointer to the next node in the linked list. 
+	 * @brief Указатель на следующий элемент стэка
 	 * 
 	 */
 	struct PVS2D_LeafGraphEdgeStack* next;
 
 	/**
-	 * @brief Portal that represents the edge. 
+	 * @brief Портал, представляющийся ребром. 
 	 * 
-	 * Since each edge between graph is going between two adjacent leafs, each edge can be represented 
-	 * as the portal that connects those two leafs, which `prt` actually is. 
+	 * Посколько все ребра в графе проходят между двумя примыкающими друг к другу листами, 
+	 * каждое ребро может быть представлено порталом, проходящим по границе между этими листами, 
+	 * которым и является `prt`
 	 * 
 	 */
 	struct PVS2D_Portal* prt;
 } PVS2D_LeafGraphEdgeStack, PVS2D_LGEdgeStack;
 
 /**
- * @brief Node in graph of leaf adjacency. 
+ * @brief Вершина в графе смежности листов. 
  * 
- * Represents a node in the graph of leaf adjacency. As well as represents the leaf itself by 
- * having some more related data, like whether this leaf is to be concidered Out-Of-Bounds or not. 
+ * Представляет вершину в графе смежности листов. Также содержит в себе информацию о листе, 
+ * например, считается ли этот лист "вне играбельной зоны".
  * 
  */
 typedef struct PVS2D_LeafGraphNode {
 	/**
-	 * @brief Leaf index. 
-	 * 
-	 * Index of the leaf this struct represents. 
+	 * @brief Индекс листа. 
 	 * 
 	 */
 	unsigned int leaf;
 
 	/**
-	 * @brief Out-Of-Bounds flag. 
+	 * @brief Флаг "вне играбельной зоны"
 	 * 
-	 * The flag that indicates whether this leaf is located Out-Of-Bounds 
-	 * (shortly - OOB) or not. this flag is set automatically, based on the 
-	 * leaf's adjacent portals. If the leaf contains the portal of infinite 
-	 * length, then this portal is OOB. If the leaf has transparent portal 
-	 * between itself and OOB portal, then this leaf is also OOB. The reason 
-	 * for this flag to exist is that it is impossible (at least currently) 
-	 * to calculate PVS with infinite portals present. 
+	 * Этот флаг указывает, является ли этот "вне играбельной зоны". Этот 
+	 * флаг устанавливается автоматически, основываясь на порталах, идущих по границе листа. 
+	 * Если на границе листа есть хотя бы один портал бесконечной длины - этот лист указывается 
+	 * как "вне играбельной зоны". Также, если лист имеет соседний лист "вне играбельной зоны", соединяясь 
+	 * с ним прозрачным порталом - то оба листа будут помечены "вне играбельной зоны". Таким образом 
+	 * достигается верность факта, что из "играбельной зоны" невозможно увидеть бесконечные порталы. 
+	 * Причина, по которой этот флаг существует, в том, что невозможно расчитать Потенциально Видимое 
+	 * множество (PVS) листа, содержащего бесконечные порталы. 
 	 * 
 	 */
 	char oob;
 
 	/**
-	 * @brief Stack of adjacent nodes. 
-	 * 
-	 * Stack of the graph edges that this node has. 
+	 * @brief Стэк ребер вершины графа
 	 * 
 	 */
 	struct PVS2D_LeafGraphEdgeStack* adjs;
 } PVS2D_LeafGraphNode;
 
 /**
- * @brief Stack of leaf graph nodes. 
+ * @brief Стэк вершин графа
  * 
- * Represents a linked list of leaf graph nodes. 
+ * Представляет собой стэк (связный список) вершин графа. 
  * 
  */
 typedef struct PVS2D_LeafGraphNodeStack {
 	/**
-	 * @brief The node itself. 
+	 * @brief Вершина графа. 
 	 * 
 	 */
 	PVS2D_LeafGraphNode* node;
 
 	/**
-	 * @brief Pointer to the next node. 
-	 * 
-	 * Pointer to the next linked list node. 
+	 * @brief Указатель на следующий элемент стэка. 
 	 * 
 	 */
 	struct PVS2D_LeafGraphNodeStack* next;
@@ -352,19 +334,19 @@ typedef struct PVS2D_LeafGraphNodeStack {
 // --------------------------------------------------------
 
 /**
- * @brief Builds Binary Space Partitioning Tree from given array of segments. 
+ * @brief Строит дерево Двоичного Разделения пространства. 
  * 
- * Builds Binary Space Partitioning Tree from given array of segments. the array must have 
- * the following structure: `segsC` blocks of 5 integers: `ax, ay, bx, by, opq`, 
- * `ax, ay` - coordinates of start point of segment, 
- * `bx, by` - coordinates of end point of segment, 
- * `opq` - flag indicating whether the segment is opaque (1 if so) or not (0 if so). 
- * Outputs 0 if succeed, something else otherwise. 
+ * Строит дерево Двоичного Разделения пространства используя данный массив отрезков. Массив 
+ * должен иметь следующую структуру: `segsC` блоков по 5 целых чисел: `ax, ay, bx, by, opq`, 
+ * `ax, ay` - координаты начала отрезка, 
+ * `bx, by` - координаты конца отрезка, 
+ * `opq` - флаг, указывающий, является ли отрезок прозрачным (0 если так) или нет (1 если так). 
+ * Возвращает 0 если построение выполнено успешно, другое число если нет. 
  * 
- * @param segs Input array of segments, `5 * segsC` ints. 
- * @param segsC The number of blocks. 
- * @param rootDest The destination of built BSP Tree. Must be allocated before calling. 
- * @return int - 0 if ok, something else otherwise. 
+ * @param segs Массив отрезков. 
+ * @param segsC Количество блоков. 
+ * @param rootDest Указатель на вершину BSP-дерева, куда будет записан результат построения. 
+ * @return 0 если успешно, другое число если нет. 
  */
 int PVS2D_BuildBSPTree(
 	int* segs, unsigned int segsC,
@@ -372,12 +354,12 @@ int PVS2D_BuildBSPTree(
 );
 
 /**
- * @brief Finds the leaf index the given point is inside of. 
+ * @brief Находит индекс листа, в котором находится данная точка. 
  * 
- * @param root Pointer to BSP Tree root. 
- * @param x X coordinate of given point. 
- * @param y Y coordinate of given point. 
- * @return unsigned int - The index of the leaf the point is inside of. 
+ * @param root Указатель на корень BSP-дерева. 
+ * @param x X координата точки. 
+ * @param y Y координата точки. 
+ * @return Индекс листа, в котором находится данная точка. 
  */
 unsigned int PVS2D_FindLeafOfPoint(
 	PVS2D_BSPTreeNode* root,
@@ -385,18 +367,18 @@ unsigned int PVS2D_FindLeafOfPoint(
 );
 
 /**
- * @brief Finds the leafs the given segment goes through. 
+ * @brief Указывает индексы листов, через которые проходит данный отрезок. 
  * 
- * Finds the leafs the given segment goes through. Outputs to "bitset" 
- * (array if chars, i-th char is 1 if segment passes through i-th leaf). 
+ * Указывает индексы листов, через которые проходит данный отрезок. Результат записывается 
+ * в "битсет" (массив char'ов, i-тый char является 1 если отрезок проходит через i-тый лист). 
  * 
- * @param root Pointer to BSP Tree root. 
- * @param ax X coordinate of first point of array. 
- * @param ay Y coordinate of first point of array. 
- * @param bx X coordinate of second point of array. 
- * @param by Y coordinate of second point of array. 
- * @param leafbitset The bitset the function will write into. Must be allocated 
- * with the number of leaves in tree beforehand. 
+ * @param root Указатель на корень BSP-дерева. 
+ * @param ax X координата начала отрезка
+ * @param ay Y координата начала отрезка
+ * @param bx X координата конца отрезка
+ * @param by Y координата конца отрезка
+ * @param leafbitset Битсет, в который функция выведет результат. Должен содержать не меньше элементов, 
+ * чем число листов в дереве. 
  */
 void PVS2D_FindLeafsOfSegment(
 	PVS2D_BSPTreeNode* root,
@@ -405,29 +387,29 @@ void PVS2D_FindLeafsOfSegment(
 );
 
 /**
- * @brief Builds portals data inside the Binary Space Partitioning tree. 
+ * @brief Строит порталы в BSP-дереве. 
  * 
- * Builds portals data inside the Binary Space Partitioning tree. Essentially it fills in 
- * the node's `portals` field. Returns 0 on success, something else otherwise. 
+ * Строит порталы внутри BSP-дерева, по сути заполняя поле `portals` в вершинах. 
+ * Возвращает 0 если построение успешно, другое число иначе. 
  * 
- * @param root The pointer to BSP Tree root. 
- * @return int - 0 if succeed, something else otherwise. 
+ * @param root Указатель на корень дерева. 
+ * @return 0 если успешно, другое число если нет. 
  */
 int PVS2D_BuildPortals(
 	PVS2D_BSPTreeNode* root
 );
 
 /**
- * @brief Builds leaf graph using tree's portal data. 
+ * @brief Строит граф смежности листов. 
  * 
- * Builds leaf graph using tree's portal data. Therefore the tree must have been processed with 
- * `PVS2D_BuildPortals` beforehand. Outputs the pointer to the list of all graph nodes 
- * (the number of nodes is the number of leaves in the tree), as well 
- * as the number of leaves in the tree. 
+ * Строит граф смежности листов используя построенные в BSP-дереве порталы. 
+ * Соответственно, дерево должно иметь порталы построенными с помощью `PVS2D_BuildPortals`.
+ * Возвращает массив из вершин графа, размер массива равен числу листов в графе, также возвращает 
+ * само число. 
  * 
- * @param root The pointer to BSP Tree root. 
- * @param nodesCDest The pointer to the unsigned int, where the number of leaves will be placed. 
- * @return PVS2D_LeafGraphNode* - The pointer to the list of graph nodes. 
+ * @param root Указатель на корень дерева. 
+ * @param nodesCDest Указатель на `unsigned int`, куда будет записано число листов в дереве. 
+ * @return Указатель на первый элемент массива вершин графа. 
  */
 PVS2D_LeafGraphNode* PVS2D_BuildLeafGraph(
 	PVS2D_BSPTreeNode* root,
@@ -435,15 +417,11 @@ PVS2D_LeafGraphNode* PVS2D_BuildLeafGraph(
 );
 
 /**
- * @brief Build the Potentially Visible Set of the given leaf. 
+ * @brief Вычисляет Потенциально Видимое множество (PVS) листа. 
  * 
- * Technically, this function could have been improved by reusing calculations info 
- * from previous calculations. Returns the "bitmask" (array if chars, i-th char 
- * is 1 if i-th leaf is visible from given). 
- * 
- * @param node The node, PVS of which we need to calculate. 
- * @param leafC The number of leaves in the tree. 
- * @return char* - The bitmask. 
+ * @param node Вершина графа, содержащая лист, PVS которого надо вычислить. 
+ * @param leafC Количество листов в дереве. 
+ * @return Битмаску - массив char'ов, где i-тый char равен 1, если i-тый лист видим из данного. 
  */
 char* PVS2D_GetLeafPVS(
 	PVS2D_LeafGraphNode* node, unsigned int leafC

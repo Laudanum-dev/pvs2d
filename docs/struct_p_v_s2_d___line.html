@@ -68,7 +68,7 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
-<p>2D Line between two points.  
+<p>Прямая на плоскости между двумя точками.  
  <a href="struct_p_v_s2_d___line.html#details">More...</a></p>
 
 <p><code>#include &lt;<a class="el" href="pvs2d_8h_source.html">pvs2d.h</a>&gt;</code></p>
@@ -76,7 +76,7 @@ $(function() {
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Data Fields</h2></td></tr>
 <tr class="memitem:a327159f1ce9ae4c0a2d0a29441d48d31"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_p_v_s2_d___line.html#a327159f1ce9ae4c0a2d0a29441d48d31">ax</a></td></tr>
-<tr class="memdesc:a327159f1ce9ae4c0a2d0a29441d48d31"><td class="mdescLeft">&#160;</td><td class="mdescRight">Points the line bases on.  <a href="struct_p_v_s2_d___line.html#a327159f1ce9ae4c0a2d0a29441d48d31">More...</a><br /></td></tr>
+<tr class="memdesc:a327159f1ce9ae4c0a2d0a29441d48d31"><td class="mdescLeft">&#160;</td><td class="mdescRight">Точки на которых лежит прямая.  <a href="struct_p_v_s2_d___line.html#a327159f1ce9ae4c0a2d0a29441d48d31">More...</a><br /></td></tr>
 <tr class="separator:a327159f1ce9ae4c0a2d0a29441d48d31"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a34dde8d7b04827487b2a154fa76073e6"><td class="memItemLeft" align="right" valign="top"><a id="a34dde8d7b04827487b2a154fa76073e6" name="a34dde8d7b04827487b2a154fa76073e6"></a>
 int&#160;</td><td class="memItemRight" valign="bottom"><b>ay</b></td></tr>
@@ -88,12 +88,12 @@ int&#160;</td><td class="memItemRight" valign="bottom"><b>bx</b></td></tr>
 int&#160;</td><td class="memItemRight" valign="bottom"><b>by</b></td></tr>
 <tr class="separator:a8d53c4b43e0a77cce8efcd89679e2f8c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aca834c16c7e2b0f07e4819dc15fbb4ce"><td class="memItemLeft" align="right" valign="top">struct <a class="el" href="struct_p_v_s2_d___seg_stack.html">PVS2D_SegStack</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_p_v_s2_d___line.html#aca834c16c7e2b0f07e4819dc15fbb4ce">mems</a></td></tr>
-<tr class="memdesc:aca834c16c7e2b0f07e4819dc15fbb4ce"><td class="mdescLeft">&#160;</td><td class="mdescRight">Stack of all segments that are on this line.  <a href="struct_p_v_s2_d___line.html#aca834c16c7e2b0f07e4819dc15fbb4ce">More...</a><br /></td></tr>
+<tr class="memdesc:aca834c16c7e2b0f07e4819dc15fbb4ce"><td class="mdescLeft">&#160;</td><td class="mdescRight">Стэк всех отрезков на прямой  <a href="struct_p_v_s2_d___line.html#aca834c16c7e2b0f07e4819dc15fbb4ce">More...</a><br /></td></tr>
 <tr class="separator:aca834c16c7e2b0f07e4819dc15fbb4ce"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p >2D Line between two points. </p>
-<p >Represents a line that goes through two points. Points are required to be integer. The architecture implies that there will be many segments lying on this line, all of which are stored in <code>mems</code> stack. Also note that line is "oriented" from Point A(ax, ay) to point B(bx, by). The orientation doesn't have any impact on performance, but might slightly modify the resulting structures. </p>
+<div class="textblock"><p >Прямая на плоскости между двумя точками. </p>
+<p >Представляет прямую на плоскости, проходящую через две точки. Точки должны иметь целочисленные координаты. Архитектура подразумевает, что на этой прямой будет лежать несколько отрезков, все они хранятся в стеке <code>mems</code>. Также обратите внимание, что прямая «ориентирована» от точки A (ax, ay) до точки B (bx, by). Ориентация не влияет на производительность, но может немного видоизменить получившиеся структуры. </p>
 </div><h2 class="groupheader">Field Documentation</h2>
 <a id="a327159f1ce9ae4c0a2d0a29441d48d31" name="a327159f1ce9ae4c0a2d0a29441d48d31"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a327159f1ce9ae4c0a2d0a29441d48d31">&#9670;&nbsp;</a></span>ax</h2>
@@ -107,8 +107,8 @@ int&#160;</td><td class="memItemRight" valign="bottom"><b>by</b></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Points the line bases on. </p>
-<p >Four coordinates of two points the line bases on. </p>
+<p>Точки на которых лежит прямая. </p>
+<p >Четыре координаты двух точек, на которых лежит прямая. </p>
 
 </div>
 </div>
@@ -124,8 +124,8 @@ int&#160;</td><td class="memItemRight" valign="bottom"><b>by</b></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Stack of all segments that are on this line. </p>
-<p >Represents a stack of all segments (instances of <code><a class="el" href="struct_p_v_s2_d___seg.html" title="2D Segment lying on a specific line.">PVS2D_Seg</a></code> structure) that are based on this line. </p>
+<p>Стэк всех отрезков на прямой </p>
+<p >Стэк, представленный списком связности, содержащий все отрезки, лежащие на прямой. </p>
 
 </div>
 </div>
