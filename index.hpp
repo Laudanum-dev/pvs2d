@@ -4,9 +4,10 @@
 /// \section welcome Welcome
 /// Welcome to the official PVS2D documentation. Here you will find a detailed view of all
 /// the PVS2D structures and functions. <br/>
+/// <a href="pvs2d_8h.html">The main documentation page</a>
 ///	
 /// \section example Short example
-/// Here is a short example, to show you how usable this library is:
+/// Here is a short example of how this library can be used:
 ///
 /// \code
 /// #include <PVS2D.h>
